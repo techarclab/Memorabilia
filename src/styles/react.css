@@ -1,0 +1,14 @@
+/* ------------------------------------------------------------------
+   React-specific additions to the design system.
+
+   The drawer and the quick-view modal stay mounted so their transitions
+   can run, so they also have to be taken out of the tab order while they
+   are closed — otherwise a keyboard user tabs into an invisible cart.
+   ------------------------------------------------------------------ */
+.drawer { transition: transform .48s var(--ease), visibility 0s linear .48s; }
+.drawer:not(.on) { visibility: hidden; }
+.drawer.on { transition: transform .48s var(--ease); }
+
+.modal { transition: opacity .3s var(--ease-soft), visibility 0s linear .3s; }
+.modal:not(.on) { visibility: hidden; }
+.modal.on { transition: opacity .3s var(--ease-soft); }

@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   JPP design tokens
+   Every colour is HSL so Tailwind and shadcn share one source.
+   The washes are the pastel section grounds from the design.
+   ============================================================ */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 150 12% 9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 12% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 12% 9%;
+
+    /* forest — stats band, footer, solid buttons */
+    --primary: 150 27% 12%;
+    --primary-foreground: 0 0% 100%;
+    --forest: 150 27% 12%;
+    --forest-light: 150 25% 16%;
+    --forest-lighter: 150 24% 22%;
+
+    /* gold — the emphasis word, accents, badges */
+    --accent: 29 49% 46%;
+    --accent-foreground: 0 0% 100%;
+    --gold: 29 49% 46%;
+    --gold-light: 34 53% 55%;
+
+    --secondary: 30 20% 97%;
+    --secondary-foreground: 150 12% 9%;
+    --shell: 30 20% 97%;
+
+    --muted: 30 20% 97%;
+    --muted-foreground: 150 6% 36%;
+
+    --destructive: 356 68% 43%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 12% 9% / 0.09;
+    --input: 150 10% 88%;
+    --ring: 150 27% 12%;
+
+    --radius: 0.75rem;
+
+    --wash-hero: linear-gradient(112deg, #fbeef1 0%, #f4ecf6 34%, #f6efe6 68%, #fdf7f0 100%);
+    --wash-peach: linear-gradient(100deg, #fbeadd 0%, #f9efe3 52%, #fdf6ee 100%);
+    --wash-sky: linear-gradient(120deg, #eef1fa 0%, #e9eef8 40%, #f3edf7 100%);
+    --wash-mint: linear-gradient(115deg, #eaf3ee 0%, #f2f6f1 100%);
+  }
+
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-weight: 500;
+    letter-spacing: -0.008em;
+  }
+  h1, h2, h3, h4 { @apply font-extrabold tracking-tighter; line-height: 1.08; }
+  ::selection { @apply bg-forest text-white; }
+}
+
+@layer components {
+  /* section eyebrow — small caps label above a heading */
+  .eyebrow {
+    @apply text-[.7rem] font-bold uppercase tracking-[.16em] text-muted-foreground;
+  }
+  /* scroll reveal, driven by the useReveal hook */
+  .reveal {
+    @apply opacity-0 translate-y-4 transition-all duration-700 ease-swift;
+  }
+  .reveal-in { @apply opacity-100 translate-y-0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal { @apply opacity-100 translate-y-0; }
+}
