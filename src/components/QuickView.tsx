@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Arw, ItemIcon, X } from "@/lib/icons";
-import { bySlug, lineLabel } from "@/data/catalog";
-import { money } from "@/lib/utils";
+import { bySlug, lineLabel, piecesMeta } from "@/data/catalog";
 import { useStore } from "@/store/StoreContext";
 import { Swatches } from "./ProductCard";
 
@@ -37,14 +36,14 @@ export default function QuickView() {
                 <Swatches p={p} />
               </div>
               <div className="card__foot" style={{ border: 0, padding: 0 }}>
-                <div className="card__price"><b>{money(p.mrp)}</b><span>per set · excl. GST</span></div>
+                <div className="card__meta">
+                  <b>{p.pieces ? piecesMeta[p.pieces]?.label ?? `${p.pieces}-in-1` : "Single item"}</b>
+                  <span>Branded from 25 pieces · quoted per order</span>
+                </div>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button className="btn btn--solid" onClick={() => { add("cart", p.slug, 1); setQuickView(null); }}>
-                  Add to Cart
-                </button>
-                <button className="btn" onClick={() => { add("enquiry", p.slug, 100); setQuickView(null); }}>
-                  Add to Enquiry
+                <button className="btn btn--solid" onClick={() => { add(p.slug, 100); setQuickView(null); }}>
+                  Add to quote list
                 </button>
               </div>
               <Link to={`/product/${p.slug}`} className="lnk" onClick={() => setQuickView(null)}>

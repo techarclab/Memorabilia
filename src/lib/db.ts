@@ -7,19 +7,17 @@
    there have to agree; if you add a field, add it in both places or the
    write is rejected.
 
-   `pricing` is the one collection the site reads. The 367 products ship
-   inside the bundle, so the catalogue costs nothing to serve, but a
-   bundled price can only be changed by a redeploy — and the prices in
-   this build are still placeholders. A single `pricing/overrides`
-   document lets the client correct them from the admin panel: one read
-   per visit instead of 367, and the bundle stays the source of truth for
-   everything that is not a number.
+   The site reads nothing from Firestore. All 367 products ship inside
+   the bundle, and there are no prices anywhere — Memorabilia sells only
+   in bulk, so every figure depends on quantity, branding and colourway
+   split and is quoted per enquiry rather than published. That keeps the
+   storefront a pure static read: no round trip before paint, nothing to
+   go stale.
    ------------------------------------------------------------------ */
 import { getDb, isConfigured, NotConfigured } from "./firebase";
 export { NotConfigured };
-import type { Overrides } from "./pricing";
 import type { BasketLine, Product } from "@/types";
-import { bySlug, unitPrice } from "@/data/catalog";
+import { bySlug } from "@/data/catalog";
 
 /* ---------- shapes ---------- */
 
@@ -42,8 +40,6 @@ export interface LineItem {
   qty: number;
   colour: string;
   brand: string;
-  unit: number;      // the price quoted at the time, so a later price change
-  total: number;     // cannot silently rewrite what the buyer was shown
 }
 
 export type Kind = "enquiry" | "order";
@@ -53,7 +49,7 @@ export interface Submission {
   source: string;            // which form or page it came from
   contact: Contact;
   lines: LineItem[];
-  indicativeTotal: number;
+  pieces: number;            // total pieces across the whole list
   status: "new";
   createdAt: unknown;
   userAgent: string;
@@ -72,11 +68,9 @@ export function toLineItems(lines: BasketLine[]): LineItem[] {
   return lines.flatMap((l) => {
     const p: Product | undefined = bySlug(l.slug);
     if (!p) return [];
-    const unit = unitPrice(p, l.qty, l.brand);
     return [{
       slug: p.slug, code: p.code, name: p.name,
       qty: l.qty, colour: l.colour, brand: l.brand,
-      unit, total: unit * l.qty,
     }];
   });
 }
@@ -114,7 +108,7 @@ export async function submit(
       message: contact.message?.trim().slice(0, 4000) || "",
     },
     lines: items,
-    indicativeTotal: items.reduce((s, i) => s + i.total, 0),
+    pieces: items.reduce((s, i) => s + i.qty, 0),
     status: "new",
     createdAt: serverTimestamp(),
     userAgent: navigator.userAgent.slice(0, 300),
@@ -123,18 +117,4 @@ export async function submit(
 
   await addDoc(collection(db, kind === "order" ? "orders" : "enquiries"), payload);
   return ref;
-}
-
-/* ---------- price overrides ---------- */
-
-export type { Overrides };
-export { fetchOverrides } from "./pricing";
-
-/** Admin only — the rules reject this for everyone else. */
-export async function saveOverrides(mrp: Overrides): Promise<void> {
-  if (!isConfigured) throw new NotConfigured();
-  const [{ doc, setDoc, serverTimestamp }, db] = await Promise.all([
-    import("firebase/firestore"), getDb(),
-  ]);
-  await setDoc(doc(db, "pricing", "overrides"), { mrp, updatedAt: serverTimestamp() });
 }

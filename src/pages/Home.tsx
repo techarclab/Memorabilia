@@ -1,33 +1,12 @@
 import { Link } from "react-router-dom";
 import Hero from "@/components/home/Hero";
+import Categories from "@/components/home/Categories";
 import Testimonials from "@/components/home/Testimonials";
-import { Arw, Check, Clock, Gift, Info, Layers, Leaf, Pencil, Play, Star, Users } from "@/lib/icons";
+import { Arw, Check, Clock, Info, Layers, Pencil, Play, Users } from "@/lib/icons";
 import { bySlug, giftSets } from "@/data/catalog";
+import { occasions } from "@/data/categories";
 import { usePageMotion } from "@/hooks/useMotion";
 import { useStore } from "@/store/StoreContext";
-
-const CATS: [string, string, string, string][] = [
-  ["2-in-1 Sets", "Notebook + pen", "?pieces=2", "JPP-2034"],
-  ["3-in-1 Sets", "Add a keychain", "?pieces=3", "JPP-3021"],
-  ["4-in-1 Sets", "Add a card holder", "?pieces=4", "JPP-4047"],
-  ["5-in-1 Sets", "The complete kit", "?pieces=5", "JPP-B5001"],
-  ["Bamboo & Eco", "A greener choice", "?tag=sustainable", "JPP-B5027"],
-  ["Pens & Keyfobs", "Sold individually", "", "JPP-559GM"],
-];
-
-const OCCS: [string, string, string][] = [
-  ["Employee Appreciation", "Recognition gifting", "JPP-PREMIUM-1"],
-  ["Client Onboarding", "Day-one welcome", "JPP-B4003"],
-  ["Festive Gifting", "Diwali & seasonal", "JPP-B4034"],
-  ["Work Anniversaries", "Long-service awards", "JPP-B5059"],
-  ["Conferences & Events", "Delegate kits", "JPP-B4005"],
-  ["CSR & Sustainable", "Bamboo range", "JPP-B4027"],
-];
-
-const STATS = [
-  [Users, "367", "SKUs in Stock"], [Gift, "52", "Cover Designs"],
-  [Star, "25", "Piece MOQ"], [Leaf, "12", "Bamboo Options"],
-] as const;
 
 const img = (slug: string) => (bySlug(slug) || giftSets[0]).img;
 
@@ -39,46 +18,7 @@ export default function Home() {
     <>
       <Hero />
 
-      <section className="stats">
-        <div className="wrap">
-          <div className="stats__in">
-            {STATS.map(([Icon, n, label]) => (
-              <div className="stats__i" key={label}>
-                <Icon />
-                <div>
-                  <b><span className="count" data-count={n}>0</span>+</b>
-                  <span>{label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="wrap">
-          <div className="shead shead--split rv">
-            <div className="stack">
-              <span className="eyebrow">Explore</span>
-              <h2 className="h2 split">Shop by Category</h2>
-            </div>
-            <div className="shead__nav">
-              <Link to="/collections" className="lnk">View All Categories <Arw /></Link>
-            </div>
-          </div>
-          <div className="cats">
-            {CATS.map(([title, sub, q, slug], i) => (
-              <Link className={`cat rv rv-d${(i % 4) + 1}`} to={`/collections${q}`} key={title}>
-                <span className="cat__img"><img src={img(slug)} alt={title} loading="lazy" /></span>
-                <span className="cat__b">
-                  <span><b>{title}</b><span>{sub}</span></span>
-                  <span className="rbtn rbtn--sm"><Arw /></span>
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Categories />
 
       <section className="feat">
         <div className="wrap">
@@ -117,18 +57,19 @@ export default function Home() {
         <div className="wrap">
           <div className="shead shead--split shead--top rv">
             <div className="stack">
-              <h2 className="h2 split">Curated for Every Occasion</h2>
+              <h2 className="h2 split">Curated for every occasion</h2>
               <p className="lede">
-                From client appreciation to employee milestones, there is a set that fits the moment.
+                Occasion is a judgement rather than a field in the catalogue, so each of these is a
+                starting filter we would suggest across a desk — open one and widen it as you like.
               </p>
             </div>
-            <Link to="/bulk-gifting" className="lnk">View All Occasions <Arw /></Link>
+            <Link to="/collections" className="lnk">Browse everything <Arw /></Link>
           </div>
           <div className="occ">
-            {OCCS.map(([title, sub, slug], i) => (
-              <Link className={`occ__i rv rv-d${(i % 4) + 1}`} to="/collections" key={title}>
-                <span className="occ__img"><img src={img(slug)} alt={title} loading="lazy" /></span>
-                <span className="occ__b"><b>{title}</b><span>{sub}</span></span>
+            {occasions.map((o, i) => (
+              <Link className={`occ__i rv rv-d${(i % 4) + 1}`} to={o.href} key={o.label}>
+                <span className="occ__img"><img src={o.img} alt="" loading="lazy" /></span>
+                <span className="occ__b"><b>{o.label}</b><span>{o.note}</span></span>
               </Link>
             ))}
           </div>
@@ -167,8 +108,8 @@ export default function Home() {
             <span className="eyebrow center">Ready to get started?</span>
             <h2 className="h1 split">Let&apos;s Create Something<br />Meaningful Together</h2>
             <p className="lede center" style={{ marginInline: "auto" }}>
-              Get personalised recommendations, transparent pricing and expert support for your
-              gifting brief.
+              Send the occasion, the headcount and the date. You get three options, mock-ups on
+              your own logo, and trade pricing at your volume — within one working day.
             </p>
             <span className="mag" style={{ marginTop: 8 }}>
               <Link to="/bulk-gifting" className="btn btn--solid btn--lg">Get a Quote Now</Link>

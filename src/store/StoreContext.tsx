@@ -1,63 +1,64 @@
 /* ------------------------------------------------------------------
-   Two baskets, one provider.
+   The quote list.
 
-   `cart`    — single sets and samples, bought outright.
-   `enquiry` — the bulk list, sent to the gifting team for trade pricing.
+   Memorabilia takes bulk orders only, so there is no cart and no
+   checkout — nothing on this site is bought, everything is quoted. A
+   visitor collects the sets they are interested in, says how many of
+   each they want, and sends the list across as one enquiry.
 
-   Both persist to localStorage so a procurement lead can build a list
-   over several visits without losing it.
+   It persists to localStorage because a procurement lead building a
+   shortlist for two hundred people rarely does it in one sitting.
    ------------------------------------------------------------------ */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import type { BasketKind, BasketLine } from "@/types";
+import type { BasketLine } from "@/types";
 import { bySlug } from "@/data/catalog";
 
-const KEY = "jpp.baskets.v1";
+const KEY = "memorabilia.quote.v1";
+
+/** The smallest order the works will run for a branded job. */
+export const MOQ = 25;
 
 interface StoreValue {
-  cart: BasketLine[];
-  enquiry: BasketLine[];
-  drawer: BasketKind | null;
+  lines: BasketLine[];
+  count: number;
+  open: boolean;
   quickView: string | null;
   toast: string;
-  lines: (k: BasketKind) => BasketLine[];
-  count: (k: BasketKind) => number;
-  add: (k: BasketKind, slug: string, qty?: number, colour?: string, brand?: string) => void;
-  remove: (k: BasketKind, i: number) => void;
-  setQty: (k: BasketKind, i: number, q: number) => void;
-  moveCartToEnquiry: () => void;
-  clearBasket: (k: BasketKind) => void;
-  openDrawer: (k: BasketKind) => void;
-  closeDrawer: () => void;
+  has: (slug: string) => boolean;
+  add: (slug: string, qty?: number, colour?: string, brand?: string) => void;
+  remove: (i: number) => void;
+  setQty: (i: number, q: number) => void;
+  clear: () => void;
+  setOpen: (v: boolean) => void;
   setQuickView: (slug: string | null) => void;
   say: (msg: string) => void;
 }
 
 const Ctx = createContext<StoreValue | null>(null);
 
-function load(): { cart: BasketLine[]; enquiry: BasketLine[] } {
+function load(): BasketLine[] {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const p = JSON.parse(raw);
-      if (Array.isArray(p.cart) && Array.isArray(p.enquiry)) return p;
+      if (Array.isArray(p)) return p;
     }
   } catch { /* private mode, cleared storage — start empty */ }
-  return { cart: [], enquiry: [] };
+  return [];
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const first = useRef(load());
-  const [cart, setCart] = useState<BasketLine[]>(first.current.cart);
-  const [enquiry, setEnquiry] = useState<BasketLine[]>(first.current.enquiry);
-  const [drawer, setDrawer] = useState<BasketKind | null>(null);
+  const [lines, setLines] = useState<BasketLine[]>(first.current);
+  const [open, setOpen] = useState(false);
   const [quickView, setQuickView] = useState<string | null>(null);
   const [toast, setToast] = useState("");
   const timer = useRef<number>();
 
   useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify({ cart, enquiry })); } catch { /* ignore */ }
-  }, [cart, enquiry]);
+    try { localStorage.setItem(KEY, JSON.stringify(lines)); } catch { /* ignore */ }
+  }, [lines]);
 
   const say = useCallback((msg: string) => {
     setToast(msg);
@@ -65,15 +66,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     timer.current = window.setTimeout(() => setToast(""), 2800);
   }, []);
 
-  const setter = (k: BasketKind) => (k === "cart" ? setCart : setEnquiry);
-
-  const add: StoreValue["add"] = useCallback((kind, slug, qty, colour, brand) => {
+  const add: StoreValue["add"] = useCallback((slug, qty, colour, brand) => {
     const p = bySlug(slug);
     if (!p) return;
-    const q = qty || (kind === "cart" ? 1 : 100);
+    const q = Math.max(MOQ, qty || MOQ);
     const c = colour || p.colours[0];
-    const b = brand || (kind === "cart" ? "none" : "emboss");
-    setter(kind)((prev) => {
+    const b = brand || "emboss";
+    setLines((prev) => {
       const i = prev.findIndex((l) => l.slug === slug && l.colour === c && l.brand === b);
       if (i > -1) {
         const next = prev.slice();
@@ -82,42 +81,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { slug, qty: q, colour: c, brand: b }];
     });
-    say(`${kind === "cart" ? "Added to cart" : "Added to enquiry"} — ${p.name}`);
-    if (kind === "enquiry" || q > 1) setDrawer(kind);
+    say(`${p.name} added to your quote list`);
+    setOpen(true);
   }, [say]);
 
-  const remove: StoreValue["remove"] = useCallback((kind, i) => {
-    setter(kind)((prev) => prev.filter((_, k) => k !== i));
-  }, []);
-
-  const setQty: StoreValue["setQty"] = useCallback((kind, i, q) => {
-    setter(kind)((prev) => prev.map((l, k) => (k === i ? { ...l, qty: Math.max(1, Math.min(100000, q || 1)) } : l)));
-  }, []);
-
-  /** Empty a basket after its contents have been sent. */
-  const clearBasket = useCallback((kind: BasketKind) => {
-    setter(kind)([]);
-  }, []);
-
-  const moveCartToEnquiry = useCallback(() => {
-    setEnquiry((prev) => [
-      ...prev,
-      ...cart.map((c) => ({ slug: c.slug, qty: Math.max(25, c.qty), colour: c.colour, brand: "emboss" })),
-    ]);
-    setCart([]);
-    setDrawer("enquiry");
-    say("Moved to bulk enquiry");
-  }, [cart, say]);
-
   const value = useMemo<StoreValue>(() => ({
-    cart, enquiry, drawer, quickView, toast,
-    lines: (k) => (k === "cart" ? cart : enquiry),
-    count: (k) => (k === "cart" ? cart.reduce((a, b) => a + b.qty, 0) : enquiry.length),
-    add, remove, setQty, moveCartToEnquiry, clearBasket,
-    openDrawer: setDrawer, closeDrawer: () => setDrawer(null),
-    setQuickView, say,
-  }), [cart, enquiry, drawer, quickView, toast, add, remove, setQty,
-       moveCartToEnquiry, clearBasket, say]);
+    lines,
+    count: lines.length,
+    open, quickView, toast,
+    has: (slug) => lines.some((l) => l.slug === slug),
+    add,
+    remove: (i) => setLines((prev) => prev.filter((_, k) => k !== i)),
+    setQty: (i, q) => setLines((prev) => prev.map((l, k) =>
+      (k === i ? { ...l, qty: Math.max(1, Math.min(100000, q || 1)) } : l))),
+    clear: () => setLines([]),
+    setOpen, setQuickView, say,
+  }), [lines, open, quickView, toast, add, say]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

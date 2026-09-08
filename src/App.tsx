@@ -12,7 +12,6 @@ import BulkGifting from "@/pages/BulkGifting";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Enquiry from "@/pages/Enquiry";
-import Checkout from "@/pages/Checkout";
 
 // The team's pages, and the Firebase SDK they need, are a separate
 // download that storefront visitors never make.
@@ -39,7 +38,6 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/enquiry" element={<Enquiry />} />
-              <Route path="/checkout" element={<Checkout />} />
               <Route path="/admin" element={
                 <Suspense fallback={<div className="pgh"><div className="wrap"><p className="lede">Loading…</p></div></div>}>
                   <Admin />

@@ -1,8 +1,14 @@
 # Memorabilia — website
 
 A React single-page application for Memorabilia's corporate gifting catalogue: 367 SKUs
-drawn from the seventeen line sheets, a hybrid cart + bulk-enquiry flow, and the
-motion layer that carries the brand.
+drawn from the seventeen line sheets, a browse-by-category system, a quote list in
+place of a cart, and the motion layer that carries the brand.
+
+**Memorabilia is bulk-only, and the site publishes no prices.** Every figure moves
+with quantity, branding method, colourway split and timeline, so a number printed on
+a product card would be wrong for almost everyone reading it. The site collects a
+brief instead; the quote comes back by email within a working day. There is no cart,
+no checkout, no rate card and no price field in the data.
 
 ---
 
@@ -40,10 +46,11 @@ because routing happens in the browser. On Apache that is a two-line
 
 ```
 src/
-  data/catalog.ts        367 SKUs, tiers, branding methods, colour tokens
+  data/catalog.ts        367 SKUs, branding methods, colour tokens
+  data/categories.ts     the category system — every count computed from the data
   data/rows.json         the catalogue itself, as compact arrays
-  types.ts               Product, Tier, BrandingMethod, BasketLine
-  store/StoreContext.tsx cart + bulk-enquiry state, persisted to localStorage
+  types.ts               Product, BrandingMethod, BasketLine
+  store/StoreContext.tsx the quote list, persisted to localStorage
   hooks/useMotion.ts     reveals, counters, split headlines, magnetics, ambient tone
   lib/icons.tsx          the icon set
   components/            layout, product card, quick view, drawer, forms
@@ -61,12 +68,24 @@ sheets and on the boxes, and buyers order against it. Changing the displayed
 brand does not change a single SKU. If the codes are ever re-issued, they live
 in one place: `src/data/rows.json`, first field of each row.
 
+### Categories
+
+`src/data/categories.ts` builds every category from the catalogue rather than by
+hand, for one reason: a tile that promises "4-in-1 Sets" and lands on an empty
+grid is worse than no tile at all. The count on each tile is the real number of
+SKUs behind it, and its link is the exact filter the catalogue page applies — so
+the two cannot drift apart. Four views (set size, range, contents, character)
+because four different buyers arrive with four different first questions.
+
+Occasions are the one editorial judgement on the site. They are suggestions
+mapped to real filters, and the page says so.
+
 ### The idea the site is built on
 
 Every cover design runs across the whole range — the same look as a two, three,
 four or five piece set. The range matrix and the design-family strip on the
 catalogue page exist to make that legible in one glance, because it is the thing
-that lets a buyer choose a look first and a budget second.
+that lets a buyer choose a look first and a set size second.
 
 Two more conventions from the line sheets are encoded throughout: **Combo**
 always means a vacuum flask is included, and **Premium** always means the
@@ -79,18 +98,17 @@ upgraded covers and the deeper presentation case.
 These are deliberate placeholders. Each one is visible on the page and must be
 replaced with something real.
 
-1. **Prices are indicative.** `mrp` in `src/data/rows.json` is derived from piece
-   count and series, not from the real trade list. Replace it before launch.
-2. **The client logo wall is empty by design.** The proof band shows
+1. **The client logo wall is empty by design.** The proof band shows
    `Client One`…`Client Six` and says so on the page. Add Memorabilia's own clients only
    with written permission — a real company's logo on a supplier's site without
    it is a legal problem, not a design decision.
-3. **The testimonials are sample copy**, labelled as such. Replace with real,
+2. **The testimonials are sample copy**, labelled as such. Replace with real,
    attributable quotes.
-4. **Both forms are inert.** They validate and confirm; they transmit nothing.
-5. **Two video slots** ("Watch Video", "Watch Our Story") show a toast. Drop the
+3. **Both forms are inert** until a Firebase project is configured. They validate
+   and confirm; without a project they say plainly that nothing was sent.
+4. **Two video slots** ("Watch Video", "Watch Our Story") show a toast. Drop the
    film in when it is shot.
-6. **Contact details are placeholders** — phone, both email addresses.
+5. **Contact details are placeholders** — phone, both email addresses.
 
 ### On product photography
 

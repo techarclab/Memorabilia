@@ -11,10 +11,12 @@ rules_version = '2';
     enquiries, orders   the public may CREATE and nothing else. They cannot
                         read what anyone else sent, cannot edit their own
                         after the fact, cannot delete. Only an admin reads.
-    pricing             the world reads (the site needs it before paint),
-                        only an admin writes.
     admins              nobody writes from a client, ever. Membership is
                         granted from the console or a trusted server.
+
+  The site reads nothing. Memorabilia is bulk-only and publishes no
+  prices, so the storefront is a pure static bundle and Firestore is
+  write-only from the public side.
 
   Note what create-only buys us. Without it, a competitor could list every
   enquiry — who is buying, how many, at what budget — which is the most
@@ -50,16 +52,14 @@ service cloud.firestore {
     }
 
     function validLine(l) {
-      return l.keys().hasOnly(['slug','code','name','qty','colour','brand','unit','total'])
+      return l.keys().hasOnly(['slug','code','name','qty','colour','brand'])
         && isString(l.slug, 40) && isString(l.code, 40) && isString(l.name, 120)
         && isString(l.colour, 40) && isString(l.brand, 20)
-        && l.qty is int && l.qty > 0 && l.qty <= 100000
-        && l.unit is number && l.unit >= 0
-        && l.total is number && l.total >= 0;
+        && l.qty is int && l.qty > 0 && l.qty <= 100000;
     }
 
     function validSubmission(d, kind) {
-      return d.keys().hasOnly(['kind','source','contact','lines','indicativeTotal',
+      return d.keys().hasOnly(['kind','source','contact','lines','pieces',
                               'status','createdAt','userAgent','ref'])
         && d.kind == kind
         && isString(d.source, 60)
@@ -69,7 +69,7 @@ service cloud.firestore {
         && d.createdAt == request.time             // and nobody backdates
         && validContact(d.contact)
         && d.lines is list && d.lines.size() <= 60
-        && d.indicativeTotal is number && d.indicativeTotal >= 0;
+        && d.pieces is int && d.pieces >= 0;
     }
 
     match /enquiries/{id} {
@@ -83,13 +83,6 @@ service cloud.firestore {
       allow create: if validSubmission(request.resource.data, 'order')
                     && request.resource.data.lines.size() > 0;
       allow read, update, delete: if isAdmin();
-    }
-
-    // Read by everyone because the storefront needs the corrected prices
-    // before it paints. Nothing here is private — it is a price list.
-    match /pricing/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
     }
 
     // Who counts as an admin is decided outside the app. Add a document

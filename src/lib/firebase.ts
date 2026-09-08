@@ -9,7 +9,7 @@
    So nothing here is imported statically. `getDb()` and `getAuthed()`
    pull the SDK in on first use and memoise it, which puts Firebase on the
    form-submit path and the /admin path and nowhere else. Reading the
-   price overrides avoids the SDK altogether; see pricing.ts.
+   storefront never touches Firestore at all — nothing is read.
 
    None of the config values are secrets. A Firebase web config ships in
    every client bundle by design; what protects the data is

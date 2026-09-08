@@ -79,9 +79,9 @@ export default function About() {
 
       <section className="section">
         <div className="wrap">
-          <div className="hero__stats rv" style={{ border: 0, justifyContent: "space-between", flexWrap: "wrap" }}>
+          <div className="kpi rv">
             {NUMBERS.map(([n, label]) => (
-              <div className="hero__stat" key={label}>
+              <div className="kpi__i" key={label}>
                 <b><span className="count" data-count={n}>0</span></b><span>{label}</span>
               </div>
             ))}

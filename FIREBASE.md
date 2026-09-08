@@ -53,9 +53,9 @@ What the rules do:
   cannot be used as free file storage, and `status` and `createdAt` are
   pinned server-side so nobody can mark their own enquiry "won" or
   backdate it.
-- **pricing** — world-readable (the storefront needs it before it paints),
-  admin-writable.
-- Everything else is closed.
+- Everything else is closed. Note there is nothing world-*readable* at
+  all: the site publishes no prices and ships its whole catalogue in the
+  bundle, so Firestore is write-only from the public side.
 
 ## 4. Make yourself an admin
 
@@ -72,17 +72,6 @@ Now open `/admin` and sign in.
 There is deliberately no sign-up anywhere in the app. Customers never
 need an account, and revoking a colleague is deleting one row.
 
-## 5. Fix the prices
-
-`/admin → Prices`. Anything you set there overrides the built-in figure
-for that SKU, saved as one small document and applied before the page
-paints — so a buyer never sees an old price flip to a new one.
-
-This matters more than it sounds: the `mrp` values shipped in the bundle
-were derived from piece count and series, **not** from the real trade
-list. They are placeholders. Correct them here before the site goes
-public.
-
 ---
 
 ## What is deliberately not built yet
@@ -95,11 +84,12 @@ can set a budget cap, so this is a small step when you want it: the
 "Trigger Email from Firestore" extension pointed at the `enquiries`
 collection is the shortest path.
 
-**Payments.** The checkout records an order and the team invoices it.
-That is a deliberate choice while prices are placeholders — taking cards
-against invented numbers is a real problem, not a rough edge. When real
-pricing lands, Razorpay drops in between the checkout form and the write
-in `src/lib/db.ts` without changing anything else on the page.
+**Payments.** There is nothing to pay for. Memorabilia takes bulk orders
+only, every one of them quoted against a brief, so the site collects the
+brief and the team invoices against the agreed quote. There is no cart,
+no checkout and no price on any page — adding a payment step would mean
+first inventing a published price, which is exactly the thing that would
+mislead a buyer.
 
 **App Check.** The rules stop bad data, but they do not stop volume. If
 the forms start attracting spam, App Check with reCAPTCHA v3 is the
@@ -110,7 +100,7 @@ answer, and it does not need code changes here.
 ## Cost
 
 At this size, effectively nothing. Free tier is 50,000 document reads and
-20,000 writes a day. The catalogue ships in the bundle, so a visit costs
-**one read** (the price overrides) and a submitted enquiry costs **one
-write**. You would need thousands of visitors a day to leave the free
-tier.
+20,000 writes a day. The catalogue ships in the bundle and there is no
+price document to fetch, so an ordinary visit costs **zero reads** and a
+submitted enquiry costs **one write**. Only `/admin` reads, and only your
+own team opens it.

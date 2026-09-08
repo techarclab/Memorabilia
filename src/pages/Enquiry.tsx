@@ -1,39 +1,37 @@
 import { Link } from "react-router-dom";
 import QuoteForm from "@/components/QuoteForm";
 import { Doc } from "@/lib/icons";
-import { brandingMethods, bySlug, tierFor, unitPrice } from "@/data/catalog";
-import { money } from "@/lib/utils";
+import { brandingMethods, bySlug, piecesMeta } from "@/data/catalog";
 import { usePageMotion } from "@/hooks/useMotion";
-import { useStore } from "@/store/StoreContext";
+import { MOQ, useStore } from "@/store/StoreContext";
 
 export default function Enquiry() {
-  const { enquiry, clearBasket } = useStore();
+  const { lines, clear } = useStore();
   usePageMotion("enquiry");
 
-  const total = enquiry.reduce((sum, it) => {
-    const p = bySlug(it.slug);
-    return p ? sum + unitPrice(p, it.qty, it.brand) * it.qty : sum;
-  }, 0);
+  /* What a bulk buyer is totalling here is pieces, not rupees. The rupees
+     come back from us, priced at exactly this volume. */
+  const pieces = lines.reduce((sum, it) => sum + it.qty, 0);
 
   return (
     <div className="pgh">
       <div className="wrap">
-        <div className="crumb"><Link to="/">Home</Link><span>/</span><span className="gold">Bulk Enquiry</span></div>
+        <div className="crumb"><Link to="/">Home</Link><span>/</span><span className="gold">Request a Quote</span></div>
         <div className="shead">
           <span className="eyebrow">Step 2 of 2</span>
           <h1 className="h1">Review and send</h1>
           <p className="lede">
             Check the sets, colours, quantities and branding below. Everything remains adjustable
-            after we respond.
+            after we respond — this is a brief, not an order.
           </p>
         </div>
 
-        <div className="grid" style={{ gridTemplateColumns: "1.25fr .75fr", gap: "clamp(28px,4vw,56px)", alignItems: "start" }}>
+        <div className="qgrid">
           <div>
-            {!enquiry.length ? (
+            {!lines.length ? (
               <div className="empty" style={{ border: "1px solid var(--line-2)", borderRadius: "var(--r-lg)" }}>
                 <Doc />
-                <p>Your enquiry list is empty.</p>
+                <p>Your quote list is empty.</p>
                 <p className="small">
                   Add sets from the catalogue, then come back here to send them across in one go.
                 </p>
@@ -41,10 +39,9 @@ export default function Enquiry() {
               </div>
             ) : (
               <>
-                {enquiry.map((it) => {
+                {lines.map((it) => {
                   const p = bySlug(it.slug);
                   if (!p) return null;
-                  const u = unitPrice(p, it.qty, it.brand);
                   const b = brandingMethods.find((x) => x.id === it.brand);
                   return (
                     <div className="ci" style={{ gridTemplateColumns: "110px 1fr auto" }}
@@ -52,11 +49,21 @@ export default function Enquiry() {
                       <img src={p.img} alt="" style={{ width: 110, height: 74 }} />
                       <div>
                         <div className="ci__n" style={{ fontSize: "1.06rem" }}>{p.name}</div>
-                        <div className="ci__m">{p.code} · {it.colour} · {b?.name} · {it.qty} sets</div>
-                        <div className="ci__p">{money(u)} per set · {tierFor(it.qty).label}</div>
+                        <div className="ci__m">
+                          {p.code} · {it.colour} · {b?.name}
+                          {p.pieces ? ` · ${piecesMeta[p.pieces]?.label ?? `${p.pieces}-in-1`}` : ""}
+                        </div>
+                        {it.qty < MOQ && (
+                          <p className="note" style={{ marginTop: 6 }}>
+                            Branded orders start at {MOQ} pieces per set.
+                          </p>
+                        )}
                       </div>
-                      <div style={{ textAlign: "right", color: "var(--t-1)", fontSize: "1.2rem", fontWeight: 800 }}>
-                        {money(u * it.qty)}
+                      <div style={{ textAlign: "right" }}>
+                        <b style={{ fontSize: "1.3rem", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+                          {it.qty.toLocaleString("en-IN")}
+                        </b>
+                        <div className="small">pieces</div>
                       </div>
                     </div>
                   );
@@ -65,24 +72,25 @@ export default function Enquiry() {
                   display: "flex", justifyContent: "space-between", alignItems: "baseline",
                   paddingTop: 22, marginTop: 8, borderTop: "1px solid var(--line)",
                 }}>
-                  <span className="small">Indicative total, excl. GST</span>
-                  <b className="gold" style={{ fontSize: "2rem", fontWeight: 800 }}>{money(total)}</b>
+                  <span className="small">
+                    {lines.length} {lines.length === 1 ? "set" : "sets"} on this brief
+                  </span>
+                  <b className="gold" style={{ fontSize: "2rem", fontWeight: 800 }}>
+                    {pieces.toLocaleString("en-IN")} pieces
+                  </b>
                 </div>
                 <p className="note" style={{ marginTop: 10 }}>
-                  Trade pricing is confirmed on quote and is usually better than the figure shown here.
+                  We price against this brief rather than publishing a rate card, because the number
+                  moves with quantity, branding method and how the order splits across colourways.
+                  You will have figures within one working day.
                 </p>
               </>
             )}
           </div>
 
-          <div style={{
-            border: "1px solid var(--line)", borderRadius: "var(--r-lg)",
-            padding: "clamp(22px,3vw,34px)", background: "var(--shell)",
-            position: "sticky", top: "calc(var(--nav-h) + 22px)",
-          }}>
+          <div className="qside">
             <h3 className="h3" style={{ marginBottom: 20 }}>Your details</h3>
-            <QuoteForm id="eForm" source="enquiry-page" lines={enquiry}
-              onSent={() => clearBasket("enquiry")} />
+            <QuoteForm id="eForm" source="enquiry-page" lines={lines} onSent={() => clear()} />
           </div>
         </div>
       </div>

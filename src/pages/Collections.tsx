@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
 import RangeMatrix from "@/components/shop/RangeMatrix";
@@ -10,9 +10,9 @@ import type { Product, Series } from "@/types";
 import { usePageMotion, useReveal } from "@/hooks/useMotion";
 import { cn } from "@/lib/utils";
 
-type Key = "pieces" | "series" | "flask" | "colour" | "tag" | "price";
+type Key = "pieces" | "series" | "flask" | "colour" | "tag" | "item";
 type Filters = Record<Key, string[]>;
-const EMPTY: Filters = { pieces: [], series: [], flask: [], colour: [], tag: [], price: [] };
+const EMPTY: Filters = { pieces: [], series: [], flask: [], colour: [], tag: [], item: [] };
 
 const PAGE = 24;
 
@@ -26,10 +26,17 @@ const TAGS: [string, string][] = [
   ["sustainable", "Bamboo"], ["design", "Design-led"],
 ];
 
-const PRICES: [string, string][] = [
-  ["0-800", "Under ₹800"], ["800-1200", "₹800 – ₹1,200"],
-  ["1200-1600", "₹1,200 – ₹1,600"], ["1600-99999", "Above ₹1,600"],
+/* The old budget filter is gone with the prices. What a bulk buyer
+   actually sorts on instead is what the recipient unboxes — so filter by
+   the items in the set. Each keyword is matched against the real contents
+   list, not a tag someone has to remember to set. */
+const ITEMS: [string, string][] = [
+  ["Notebook", "Notebook"], ["Pen", "Pen"], ["Flask", "Flask or bottle"],
+  ["Keychain", "Keychain"], ["Card Holder", "Card holder"],
 ];
+const hasItem = (p: Product, key: string) =>
+  p.contents.some((c) => c.toLowerCase().includes(key.toLowerCase())) ||
+  (key === "Flask" && p.flask);
 
 const QUICK: [string, string][] = [
   ["all", "All"], ["p2", "2-in-1"], ["p3", "3-in-1"], ["p4", "4-in-1"], ["p5", "5-in-1"],
@@ -67,18 +74,33 @@ export default function Collections() {
   const [sort, setSort] = useState("featured");
   const [shown, setShown] = useState(PAGE);
   const [openFilters, setOpenFilters] = useState(false);
+  const results = useRef<HTMLDivElement>(null);
 
   /* The URL is the entry point: /collections?pieces=4&flask=1 comes in from
      the range matrix, the footer and the home page categories. */
   useEffect(() => {
     const next = { ...EMPTY };
-    (["pieces", "series", "flask", "tag"] as Key[]).forEach((k) => {
+    /* Every filter reads from the URL, and every one accepts a
+       comma-separated list — so a category tile can point at a
+       combination ("?pieces=4,5") and the checkboxes come up matching. */
+    (["pieces", "series", "flask", "tag", "colour", "item"] as Key[]).forEach((k) => {
       const v = params.get(k);
-      if (v) next[k] = [v];
+      if (v) next[k] = v.split(",").map((x) => x.trim()).filter(Boolean);
     });
     setF(next);
-    setDesign(params.get("design") || "");
+    const d = params.get("design") || "";
+    setDesign(d);
     setShown(PAGE);
+
+    /* "See the family" filters the grid, but the grid sits below the range
+       matrix and the design strip — so without this the reader clicks, the
+       page appears not to react, and the filtered results are a screen and
+       a half further down. Take them to the results. */
+    if (d || [...params.keys()].length) {
+      requestAnimationFrame(() => {
+        results.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
   }, [params]);
 
   /* Typing filters after a beat, so a long code does not re-render per key. */
@@ -95,15 +117,12 @@ export default function Collections() {
       if (f.flask.length && !f.flask.includes(p.flask ? "1" : "0")) return false;
       if (f.colour.length && !f.colour.some((c) => p.colours.includes(c))) return false;
       if (f.tag.length && !f.tag.every((t) => p.tags.includes(t))) return false;
-      if (f.price.length && !f.price.some((b) => {
-        const [lo, hi] = b.split("-").map(Number);
-        return p.mrp >= lo && p.mrp < hi;
-      })) return false;
+      if (f.item.length && !f.item.every((k) => hasItem(p, k))) return false;
       if (q && !`${p.code} ${p.name} ${p.blurb}`.toLowerCase().includes(q)) return false;
       return true;
     });
-    if (sort === "low") out.sort((a, b) => a.mrp - b.mrp);
-    else if (sort === "high") out.sort((a, b) => b.mrp - a.mrp);
+    if (sort === "small") out.sort((a, b) => a.pieces - b.pieces || a.name.localeCompare(b.name));
+    else if (sort === "big") out.sort((a, b) => b.pieces - a.pieces || a.name.localeCompare(b.name));
     else if (sort === "az") out.sort((a, b) => a.name.localeCompare(b.name) || a.pieces - b.pieces);
     else if (sort === "code") out.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
     else out.sort((a, b) => b.tags.length - a.tags.length || a.pieces - b.pieces);
@@ -142,7 +161,7 @@ export default function Collections() {
     const label = k === "pieces" ? `${v}-in-1`
       : k === "series" ? (seriesMeta[v as Series]?.short ?? v)
       : k === "flask" ? (v === "1" ? "With flask" : "No flask")
-      : k === "price" ? `₹${v.replace("-", "–")}`
+      : k === "item" ? (ITEMS.find(([id]) => id === v)?.[1] ?? v)
       : v;
     chips.push([`${k}:${v}`, label]);
   }));
@@ -165,8 +184,8 @@ export default function Collections() {
             <h1 className="h1">{giftSets.length} sets, one system</h1>
           </div>
           <p className="lede" style={{ maxWidth: "46ch" }}>
-            Every gift set in the range. Filter by pieces, series, colourway or budget, or search a
-            code straight from the line sheet. Individually sold pens and keyfobs live under{" "}
+            Every gift set in the range. Filter by set size, series, colourway or what is inside,
+            or search a code straight from the line sheet. Individually sold pens and keyfobs live under{" "}
             <Link to="/accessories" className="gold">Accessories</Link>.
           </p>
         </div>
@@ -189,7 +208,7 @@ export default function Collections() {
           ))}
         </div>
 
-        <div className="shop">
+        <div className="shop" ref={results} style={{ scrollMarginTop: "calc(var(--nav-h) + 20px)" }}>
           <aside className={cn("filters", openFilters && "on")}>
             <div className="fgrp">
               <span className="fgrp__t">Search</span>
@@ -229,11 +248,9 @@ export default function Collections() {
               rows={TAGS.map(([v, label]) => ["tag", v, label,
                 count((p) => p.tags.includes(v))] as [Key, string, string, number])} />
 
-            <Group title="Budget per set" f={f} toggle={toggle}
-              rows={PRICES.map(([v, label]) => {
-                const [lo, hi] = v.split("-").map(Number);
-                return ["price", v, label, count((p) => p.mrp >= lo && p.mrp < hi)] as [Key, string, string, number];
-              })} />
+            <Group title="What is inside" f={f} toggle={toggle}
+              rows={ITEMS.map(([v, label]) =>
+                ["item", v, label, count((p) => hasItem(p, v))] as [Key, string, string, number])} />
 
             <button className="btn btn--ghost btn--sm btn--block" onClick={clear}>Clear all filters</button>
           </aside>
@@ -247,8 +264,8 @@ export default function Collections() {
               </div>
               <select className="sel" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort">
                 <option value="featured">Sort · Featured</option>
-                <option value="low">Price · Low to high</option>
-                <option value="high">Price · High to low</option>
+                <option value="small">Set size · Small to large</option>
+                <option value="big">Set size · Large to small</option>
                 <option value="az">Design · A–Z</option>
                 <option value="code">Code</option>
               </select>
@@ -257,7 +274,15 @@ export default function Collections() {
             <div className="chiprow">
               {chips.map(([id, label]) => (
                 <button className="chip" key={id} onClick={() => {
-                  if (id === "design") return setDesign("");
+                  if (id === "design") {
+                    setDesign("");
+                    if (params.get("design")) {
+                      const next = new URLSearchParams(params);
+                      next.delete("design");
+                      setParams(next, { replace: true });
+                    }
+                    return;
+                  }
                   const [k, v] = id.split(":") as [Key, string];
                   toggle(k, v);
                 }}>{label} <X /></button>

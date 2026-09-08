@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
-import CartDrawer from "@/components/CartDrawer";
+import QuoteDrawer from "@/components/QuoteDrawer";
 import QuickView from "@/components/QuickView";
 import Toast from "@/components/Toast";
 import { useHeaderBehaviour } from "@/hooks/useMotion";
@@ -10,11 +10,13 @@ import { useStore } from "@/store/StoreContext";
 
 export default function Layout() {
   const loc = useLocation();
-  const { drawer, quickView } = useStore();
-  useHeaderBehaviour(drawer !== null || quickView !== null);
+  const { open, quickView } = useStore();
+  useHeaderBehaviour(open || quickView !== null);
 
-  /* Every route change starts at the top, the way a page load would. */
-  useEffect(() => { window.scrollTo(0, 0); }, [loc.pathname, loc.search]);
+  /* A new page starts at the top, the way a page load would — but only a new
+     page. Filtering the catalogue rewrites the query string, and scrolling
+     the reader back to the header every time they tick a box is maddening. */
+  useEffect(() => { window.scrollTo(0, 0); }, [loc.pathname]);
 
   return (
     <>
@@ -22,7 +24,7 @@ export default function Layout() {
       <Header />
       <main id="main"><Outlet /></main>
       <Footer />
-      <CartDrawer />
+      <QuoteDrawer />
       <QuickView />
       <Toast />
     </>

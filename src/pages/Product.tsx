@@ -1,13 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
 import { Arw, Box, ItemIcon } from "@/lib/icons";
 import {
-  brandingMethods, bySlug, colourHex, families, giftSets, lineLabel, products, tierFor, unitPrice,
+  brandingMethods, bySlug, colourHex, families, giftSets, lineLabel, piecesMeta, products,
 } from "@/data/catalog";
-import { money } from "@/lib/utils";
-import { usePageMotion } from "@/hooks/useMotion";
-import { useStore } from "@/store/StoreContext";
+import { setTone, usePageMotion } from "@/hooks/useMotion";
+import { MOQ, useStore } from "@/store/StoreContext";
 import NotFound from "./NotFound";
 
 export default function ProductPage() {
@@ -21,6 +20,23 @@ export default function ProductPage() {
   const [zoom, setZoom] = useState(false);
   const [shot, setShot] = useState(p?.img ?? "");
 
+  /* Moving between two products does not remount this route, so without
+     this the previous set's photo and colourway stay on screen — which is
+     why clicking a swatch looked broken: the ring was on a colour the new
+     product does not even offer. */
+  useEffect(() => {
+    if (!p) return;
+    setColour(p.colours[0]);
+    setShot(p.img);
+    setZoom(false);
+    setQty(100);
+  }, [p]);
+
+  /* Choosing a colourway retints the page around it. The catalogue shot
+     shows every colourway at once, so this is the honest way to make the
+     choice visible rather than pretending the photo changed. */
+  useEffect(() => { if (colour) setTone(colour); }, [colour]);
+
   /* The same cover design in every other size — this is the range's whole
      proposition, so it leads the gallery and the strip below. */
   const fam = useMemo(() => (p ? (families[p.name] || []).filter((x) => x.slug !== p.slug) : []), [p]);
@@ -33,8 +49,6 @@ export default function ProductPage() {
   if (!p) return <NotFound />;
 
   const b = brandingMethods.find((x) => x.id === brand)!;
-  const tier = tierFor(qty);
-  const unit = unitPrice(p, qty, brand);
   const thumbs = [p, ...(fam.length ? fam.slice(0, 3) : giftSets.filter((x) => x.slug !== p.slug).slice(0, 3))];
   const stepQ = (dir: 1 | -1) =>
     setQty((q) => Math.max(1, dir > 0 ? (q >= 25 ? q + 25 : q + 1) : (q > 25 ? q - 25 : q - 1)));
@@ -87,11 +101,17 @@ export default function ProductPage() {
               </p>
               <div className="swatches">
                 {p.colours.map((c) => (
-                  <button key={c} className={`swb${c === colour ? " on" : ""}`}
-                    style={{ background: colourHex[c] || "#666" }} aria-label={c}
+                  <button key={c} type="button" className={`swb${c === colour ? " on" : ""}`}
+                    style={{ background: colourHex[c] || "#666" }}
+                    aria-label={c} aria-pressed={c === colour} title={c}
                     onClick={() => setColour(c)} />
                 ))}
               </div>
+              <p className="note" style={{ marginTop: 10 }}>
+                {p.colours.length > 1
+                  ? `Ordered in ${colour}. The photograph shows all ${p.colours.length} colourways — the set is supplied in whichever you pick here.`
+                  : `Supplied in ${colour}.`}
+              </p>
             </div>
 
             <div>
@@ -99,51 +119,65 @@ export default function ProductPage() {
               <select className="sel" style={{ width: "100%" }} value={brand}
                 onChange={(e) => setBrand(e.target.value)} aria-label="Branding method">
                 {brandingMethods.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} · {m.add ? `+${money(m.add)}` : "included"} · {m.lead}
-                  </option>
+                  <option key={m.id} value={m.id}>{m.name} · {m.lead}</option>
                 ))}
               </select>
               <p className="note" style={{ marginTop: 10 }}>{b.note} Lead time {b.lead}.</p>
             </div>
 
             <div>
-              <p className="small" style={{ marginBottom: 12 }}>Quantity</p>
+              <p className="small" style={{ marginBottom: 12 }}>
+                Quantity — <span className="gold">{qty.toLocaleString("en-IN")} pieces</span>
+              </p>
               <span className="qty">
                 <button onClick={() => stepQ(-1)} aria-label="Decrease">−</button>
                 <input type="number" value={qty} min={1} aria-label="Quantity"
                   onChange={(e) => setQty(Math.max(1, Math.min(100000, parseInt(e.target.value, 10) || 1)))} />
                 <button onClick={() => stepQ(1)} aria-label="Increase">+</button>
               </span>
-              <span className="small" style={{ marginLeft: 14 }}>
-                {tier.label}{tier.off ? ` · saving ${money(p.mrp * tier.off * qty)}` : ""}
-              </span>
+              <div className="qpick">
+                {[100, 250, 500, 1000].map((n) => (
+                  <button key={n} type="button" className={`chip${qty === n ? " on" : ""}`}
+                    onClick={() => setQty(n)}>{n.toLocaleString("en-IN")}</button>
+                ))}
+              </div>
+              {qty < MOQ && (
+                <p className="note" style={{ marginTop: 10 }}>
+                  Branded orders start at {MOQ} pieces per set.
+                </p>
+              )}
             </div>
 
-            <div className="priceblk">
-              <div className="priceblk__row"><span>List price per set</span><span>{money(p.mrp)}</span></div>
-              <div className="priceblk__row">
-                <span>Volume tier</span>
-                <span className="gold">{tier.off ? `${tier.label} · −${Math.round(tier.off * 100)}%` : "List price"}</span>
+            {/* Where a price used to sit. A published figure would be wrong
+                more often than right — it moves with volume, branding method
+                and how the order splits across colourways — so this states
+                what is actually fixed and leaves the number to the quote. */}
+            <div className="quoteblk">
+              <div className="quoteblk__row">
+                <span>What you are asking for</span>
+                <b>{qty.toLocaleString("en-IN")} × {p.pieces ? piecesMeta[p.pieces]?.label ?? `${p.pieces}-in-1` : "piece"}</b>
               </div>
-              <div className="priceblk__row">
-                <span>Branding</span><span>{b.add ? `+${money(b.add)}` : "Included"}</span>
-              </div>
-              <div className="priceblk__row total"><span>Your price per set</span><b>{money(unit)}</b></div>
-              <div className="priceblk__row">
-                <span>Order total (excl. GST)</span><span className="gold">{money(unit * qty)}</span>
-              </div>
+              <div className="quoteblk__row"><span>Colourway</span><b>{colour}</b></div>
+              <div className="quoteblk__row"><span>Branding</span><b>{b.name}</b></div>
+              <div className="quoteblk__row"><span>Lead time</span><b>{b.lead}</b></div>
+              <p className="quoteblk__note">
+                Bulk only — we quote rather than list, and come back with trade pricing at your
+                volume within one working day.
+              </p>
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button className="btn btn--solid" style={{ flex: 1, minWidth: 180 }}
-                onClick={() => add("cart", p.slug, qty, colour, brand)}>Add to Cart</button>
-              <button className="btn" style={{ flex: 1, minWidth: 180 }}
-                onClick={() => add("enquiry", p.slug, Math.max(25, qty), colour, brand)}>Add to Bulk Enquiry</button>
+                onClick={() => add(p.slug, Math.max(MOQ, qty), colour, brand)}>
+                Add to quote list
+              </button>
+              <Link to="/contact" className="btn" style={{ flex: 1, minWidth: 180 }}>
+                Request a sample
+              </Link>
             </div>
             <p className="note">
-              MOQ for branded orders is 25 pieces per SKU. Single unbranded sets and samples can be
-              bought from the cart.
+              MOQ is {MOQ} pieces per SKU for branded work, and it applies per SKU rather than per
+              colour — so one order can be split across every colourway this set is made in.
             </p>
 
             <table className="spec">

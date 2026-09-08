@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Product } from "@/types";
-import { colourHex, colourTone, families, lineLabel, tagLabel } from "@/data/catalog";
-import { money } from "@/lib/utils";
+import { colourHex, colourTone, families, lineLabel, piecesMeta, tagLabel } from "@/data/catalog";
 import { useStore } from "@/store/StoreContext";
 
 /** Up to six colourway dots, then a "+n" for the rest. */
@@ -46,8 +45,14 @@ export default function ProductCard({ p, i = 0 }: { p: Product; i?: number }) {
         </span>
         <h3 className="card__name">{p.name}</h3>
         <p className="card__cover">{p.blurb}</p>
+        {/* No price. Every order is quoted at the buyer's volume, so what
+            belongs here is what they actually choose between: how many
+            pieces are in the set, and how many colourways it runs in. */}
         <div className="card__foot">
-          <div className="card__price"><b>{money(p.mrp)}</b><span>per set · excl. GST</span></div>
+          <div className="card__meta">
+            <b>{p.pieces ? piecesMeta[p.pieces]?.label ?? `${p.pieces}-in-1` : "Single item"}</b>
+            <span>{p.colours.length} colourway{p.colours.length === 1 ? "" : "s"} · MOQ 25</span>
+          </div>
           <Swatches p={p} />
         </div>
       </div>

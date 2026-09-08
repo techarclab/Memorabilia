@@ -1,18 +1,24 @@
-import type { Product, Series, Tier, BrandingMethod } from "@/types";
+import type { Product, Series, BrandingMethod } from "@/types";
 import rows from "./rows.json";
 
 /* ------------------------------------------------------------------
-   NOTE FOR CLIENT: prices below are indicative placeholders derived
-   from piece count and series. Replace `mrp` with real trade pricing
-   before launch. Everything else — codes, colourways, contents — is
-   taken from the seventeen line sheets. Product codes keep the "JPP"
-   prefix because that is what is printed on the sheets and on the boxes —
-   only the brand name shown to visitors is Memorabilia.
+   The catalogue.
+
+   There are no prices here, and that is deliberate. Memorabilia sells
+   only in bulk: every price depends on quantity, branding method and
+   colourway split, so a number on a card would be wrong more often than
+   right, and a buyer who anchors on it is a buyer who feels misled when
+   the real quote arrives. Everything on the site leads to an enquiry
+   instead.
+
+   Product codes keep the "JPP" prefix because that is what is printed on
+   the line sheets and on the boxes — only the brand shown to visitors is
+   Memorabilia.
    ------------------------------------------------------------------ */
 
 type Row = [
   string, string, string, string, number, string,
-  number, number, string, string[], number, string[], string[], string
+  number, number, string, string[], string[], string[], string
 ];
 
 export const products: Product[] = (rows as Row[]).map((r) => ({
@@ -26,10 +32,9 @@ export const products: Product[] = (rows as Row[]).map((r) => ({
   segment: Boolean(r[7]),
   cat: r[8],
   colours: r[9],
-  mrp: r[10],
-  tags: r[11],
-  contents: r[12],
-  spec: r[13],
+  tags: r[10],
+  contents: r[11],
+  spec: r[12],
   img: `/assets/img/${r[1]}.webp`,
 }));
 
@@ -45,7 +50,7 @@ export const families: Record<string, Product[]> = giftSets.reduce((acc, p) => {
 }, {} as Record<string, Product[]>);
 
 export const seriesMeta: Record<Series, { name: string; short: string; desc: string }> = {
-  standard: { name: "Gift Set", short: "Standard", desc: "The core range. Everyday-premium covers, the signature box, the best price per head." },
+  standard: { name: "Gift Set", short: "Standard", desc: "The core range. Everyday-premium covers, the signature box, the widest choice of designs." },
   premium:  { name: "Premium Gift Set", short: "Premium", desc: "Upgraded covers and the deep presentation case with a stitched leather carry handle." },
   prestige: { name: "Platinum Prestige", short: "Prestige", desc: "The 500 ml and 750 ml bottle line, shot on dark marble." },
   compact:  { name: "Tiny & Prince", short: "Compact", desc: "Pocket-size two and three piece sets — card holders, pens and keyfobs." },
@@ -59,20 +64,12 @@ export const piecesMeta: Record<number, { label: string; items: string }> = {
   5: { label: "5-in-1", items: "Notebook + Pen + Keychain + Card Holder + Flask" },
 };
 
-export const tiers: Tier[] = [
-  { min: 1,   max: 24,  off: 0,    label: "Sample / 1-24" },
-  { min: 25,  max: 99,  off: 0.08, label: "25-99 pcs" },
-  { min: 100, max: 249, off: 0.15, label: "100-249 pcs" },
-  { min: 250, max: 499, off: 0.22, label: "250-499 pcs" },
-  { min: 500, max: 1e9, off: 0.3,  label: "500+ pcs" },
-];
-
 export const brandingMethods: BrandingMethod[] = [
-  { id: "emboss", name: "Blind Deboss",       add: 45, lead: "10-12 days", note: "Tone-on-tone pressed logo. The quietest, most premium finish on PU and leatherette covers." },
-  { id: "foil",   name: "Gold / Silver Foil", add: 65, lead: "10-12 days", note: "Metallic hot-foil stamp. Highest contrast on black, navy and tan covers." },
-  { id: "laser",  name: "Laser Engraving",    add: 55, lead: "8-10 days",  note: "Permanent mark on the steel bottle, pen barrel and keychain. Never fades." },
-  { id: "uv",     name: "UV Colour Print",    add: 70, lead: "12-14 days", note: "Full-colour logo reproduction. Best when brand colours must be exact." },
-  { id: "none",   name: "Unbranded",          add: 0,  lead: "5-7 days",   note: "Shipped as-is in the signature presentation box." },
+  { id: "emboss", name: "Blind Deboss",       lead: "10–12 days", note: "Tone-on-tone pressed logo. The quietest, most premium finish on PU and leatherette covers." },
+  { id: "foil",   name: "Gold / Silver Foil", lead: "10–12 days", note: "Metallic hot-foil stamp. Highest contrast on black, navy and tan covers." },
+  { id: "laser",  name: "Laser Engraving",    lead: "8–10 days",  note: "Permanent mark on the steel bottle, pen barrel and keychain. Never fades." },
+  { id: "uv",     name: "UV Colour Print",    lead: "12–14 days", note: "Full-colour logo reproduction. Best when brand colours must be exact." },
+  { id: "none",   name: "Unbranded",          lead: "5–7 days",   note: "Shipped as-is in the signature presentation box." },
 ];
 
 /** Swatch hexes for every colourway name that appears in the line sheets. */
@@ -104,16 +101,6 @@ export const faq = [
   { q: "Is the presentation box included?", a: "Always. Every set ships in its signature rigid box. It is part of the product, not an extra." },
 ];
 
-export function tierFor(qty: number): Tier {
-  for (let i = tiers.length - 1; i >= 0; i--) if (qty >= tiers[i].min) return tiers[i];
-  return tiers[0];
-}
-
-export function unitPrice(p: Product, qty: number, brandId: string): number {
-  const b = brandingMethods.find((x) => x.id === brandId) ?? brandingMethods[4];
-  return Math.round(p.mrp * (1 - tierFor(qty).off)) + b.add;
-}
-
 /** "Premium 4-in-1 Combo", "Platinum Prestige", "Keychains" … */
 export function lineLabel(p: Product): string {
   if (p.segment) return p.cat || "Accessory";
@@ -132,27 +119,4 @@ export function tagLabel(p: Product): string {
   if (p.tags.includes("new")) return "New";
   if (p.tags.includes("sustainable")) return "Bamboo";
   return "";
-}
-
-/* ------------------------------------------------------------------
-   Price overrides.
-
-   `mrp` in rows.json is a placeholder derived from piece count and
-   series — it is not JPP's trade pricing. Rather than move all 367 rows
-   into Firestore just to make numbers editable, the admin panel writes a
-   single map of slug -> price and this applies it over the bundle.
-
-   It is applied once, before React mounts (see main.tsx), so a price is
-   never rendered and then corrected under the reader.
-   ------------------------------------------------------------------ */
-export function applyPriceOverrides(mrp: Record<string, number>): number {
-  let n = 0;
-  for (const p of products) {
-    const v = mrp[p.slug];
-    if (typeof v === "number" && Number.isFinite(v) && v > 0 && v !== p.mrp) {
-      p.mrp = v;
-      n++;
-    }
-  }
-  return n;
 }

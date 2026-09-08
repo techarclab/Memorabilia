@@ -1,18 +1,18 @@
 /* ------------------------------------------------------------------
-   The team's side of the site: what came in, and what things cost.
+   The team's side of the site: what came in.
 
-   Two jobs, and they are the two the client cannot do without a developer
-   otherwise. Read the enquiries and orders — which is the whole point of
-   having a backend at all — and correct the prices, which in this build
-   are still placeholders derived from piece count.
+   One job, and it is the one the client cannot do without a developer
+   otherwise — read the quote requests as they arrive, move them through
+   a status, and export the lot as a CSV procurement can open.
+
+   There is no price editor any more. Memorabilia quotes every order
+   against the brief, so there is no published figure for an admin panel
+   to correct.
    ------------------------------------------------------------------ */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { Arw, Check, Doc, Info } from "@/lib/icons";
+import { Arw, Doc, Info } from "@/lib/icons";
 import { getDb, isConfigured } from "@/lib/firebase";
-import { fetchOverrides, saveOverrides, type Overrides } from "@/lib/db";
-import { giftSets, products } from "@/data/catalog";
-import { money } from "@/lib/utils";
 import { useAuth } from "@/store/AuthContext";
 import { useStore } from "@/store/StoreContext";
 
@@ -25,10 +25,10 @@ interface Row {
   ref: string;
   status: Status;
   source: string;
-  indicativeTotal: number;
+  pieces: number;
   createdAt?: { seconds: number };
   contact: Record<string, string>;
-  lines: { code: string; name: string; qty: number; colour: string; unit: number }[];
+  lines: { code: string; name: string; qty: number; colour: string; brand: string }[];
 }
 
 /* ---------- sign in ---------- */
@@ -129,13 +129,13 @@ function Submissions() {
   function exportCsv() {
     const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const head = ["Reference", "Type", "Status", "Date", "Name", "Company", "Email",
-      "Phone", "Occasion", "Budget", "Needed by", "Indicative total", "Items", "Message"];
+      "Phone", "Occasion", "Budget", "Needed by", "Total pieces", "Items", "Message"];
     const body = shown.map((r) => [
       r.ref, r.kind, r.status,
       r.createdAt ? new Date(r.createdAt.seconds * 1000).toISOString().slice(0, 10) : "",
       r.contact?.name, r.contact?.company, r.contact?.email, r.contact?.phone,
       r.contact?.occasion, r.contact?.budget, r.contact?.needBy,
-      r.indicativeTotal,
+      r.pieces ?? (r.lines || []).reduce((s2, l) => s2 + l.qty, 0),
       (r.lines || []).map((l) => `${l.code} x${l.qty} (${l.colour})`).join(" | "),
       r.contact?.message,
     ].map(esc).join(","));
@@ -197,7 +197,7 @@ function Submissions() {
             <span className="badge-soft">{r.kind}</span>
             <span className="small" style={{ marginLeft: "auto", fontVariantNumeric: "tabular-nums" }}>
               {r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleDateString("en-IN") : "—"}
-              {r.indicativeTotal ? ` · ${money(r.indicativeTotal)}` : ""}
+              {r.pieces ? ` · ${r.pieces.toLocaleString("en-IN")} pieces` : ""}
             </span>
           </div>
 
@@ -223,7 +223,7 @@ function Submissions() {
               {!!r.lines?.length && (
                 <ul className="incl" style={{ marginTop: 14 }}>
                   {r.lines.map((l, k) => (
-                    <li key={k}>{l.code} · {l.name} · {l.colour} · {l.qty} × {money(l.unit)}</li>
+                    <li key={k}>{l.code} · {l.name} · {l.colour} · {l.brand} · {l.qty.toLocaleString("en-IN")} pieces</li>
                   ))}
                 </ul>
               )}
@@ -235,104 +235,10 @@ function Submissions() {
   );
 }
 
-/* ---------- prices ---------- */
-
-function Prices() {
-  const { say } = useStore();
-  const [edits, setEdits] = useState<Overrides>({});
-  const [q, setQ] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    void fetchOverrides().then((o) => { setEdits(o); setLoaded(true); });
-  }, []);
-
-  const list = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    const pool = t
-      ? products.filter((p) => `${p.code} ${p.name}`.toLowerCase().includes(t))
-      : giftSets.slice(0, 40);
-    return pool.slice(0, 80);
-  }, [q]);
-
-  const changed = Object.keys(edits).length;
-
-  async function save() {
-    setBusy(true);
-    try {
-      await saveOverrides(edits);
-      say(`Saved ${changed} price${changed === 1 ? "" : "s"} — live on the next page load`);
-    } catch (e) {
-      say(e instanceof Error ? e.message : "Could not save");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <>
-      <div className="ok" style={{ marginBottom: 20 }}>
-        <Info />
-        <div>
-          <b style={{ color: "var(--t-1)", fontWeight: 700 }}>These replace the placeholder prices</b>
-          <p className="small" style={{ marginTop: 5 }}>
-            The catalogue ships inside the site, so it loads instantly, but its prices were
-            derived from piece count rather than the real trade list. Anything set here
-            overrides the built-in figure for that SKU. Leave a box empty to keep the
-            built-in one. Volume tiers and branding charges are applied on top, as before.
-          </p>
-        </div>
-      </div>
-
-      <div className="sbar">
-        <input className="fsearch" style={{ maxWidth: 340 }} placeholder="Search a code or design…"
-          value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="btn btn--solid btn--sm" onClick={() => void save()} disabled={busy || !loaded}>
-          {busy ? "Saving…" : `Save ${changed} override${changed === 1 ? "" : "s"}`}
-        </button>
-      </div>
-
-      {list.map((p) => (
-        <div key={p.slug} style={{
-          display: "grid", gridTemplateColumns: "56px 1fr auto auto", gap: 14,
-          alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line-2)",
-        }}>
-          <img src={p.img} alt="" style={{ width: 56, height: 42, objectFit: "cover", borderRadius: 8 }} />
-          <div>
-            <div className="ci__n">{p.name}</div>
-            <div className="ci__m">{p.code}</div>
-          </div>
-          <span className="small" style={{ fontVariantNumeric: "tabular-nums" }}>
-            built in {money(p.mrp)}
-          </span>
-          <input type="number" min={1} className="fsearch" style={{ width: 130 }}
-            placeholder="—"
-            value={edits[p.slug] ?? ""}
-            onChange={(e) => setEdits((prev) => {
-              const next = { ...prev };
-              const v = Number(e.target.value);
-              if (e.target.value === "" || !Number.isFinite(v) || v <= 0) delete next[p.slug];
-              else next[p.slug] = Math.round(v);
-              return next;
-            })} />
-        </div>
-      ))}
-
-      {!q && (
-        <p className="note" style={{ marginTop: 16 }}>
-          Showing the first 40 sets. Search to reach any of the {products.length} SKUs.
-        </p>
-      )}
-    </>
-  );
-}
-
 /* ---------- shell ---------- */
 
 export default function Admin() {
   const { user, isAdmin, ready, signOutNow } = useAuth();
-  const [tab, setTab] = useState<"in" | "prices">("in");
 
   if (!isConfigured) {
     return (
@@ -380,7 +286,7 @@ export default function Admin() {
         <div className="shead shead--split">
           <div className="stack">
             <span className="eyebrow">Memorabilia</span>
-            <h1 className="h2">Enquiries &amp; pricing</h1>
+            <h1 className="h2">Quote requests</h1>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <span className="small">{user.email}</span>
@@ -388,16 +294,7 @@ export default function Admin() {
           </div>
         </div>
 
-        <div className="pillbar" style={{ marginBottom: 24 }}>
-          <button className={`pill${tab === "in" ? " on" : ""}`} onClick={() => setTab("in")}>
-            <Check /> Submissions
-          </button>
-          <button className={`pill${tab === "prices" ? " on" : ""}`} onClick={() => setTab("prices")}>
-            Prices
-          </button>
-        </div>
-
-        {tab === "in" ? <Submissions /> : <Prices />}
+        <Submissions />
       </div>
       <div style={{ height: "clamp(60px,8vw,110px)" }} />
     </div>

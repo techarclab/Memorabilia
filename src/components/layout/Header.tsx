@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Cart, Doc, Logo, Search, Shield } from "@/lib/icons";
+import { Cart, Logo, Search, Shield } from "@/lib/icons";
 import { useStore } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ function Badge({ n }: { n: number }) {
 }
 
 export default function Header() {
-  const { count, openDrawer } = useStore();
+  const { count, setOpen } = useStore();
   const [menu, setMenu] = useState(false);
   const loc = useLocation();
   const nav = useNavigate();
@@ -79,11 +79,10 @@ export default function Header() {
 
           <div className="hdr__act">
             <button className="icobtn" onClick={search} aria-label="Search the catalogue"><Search /></button>
-            <button className="icobtn" onClick={() => openDrawer("enquiry")} aria-label="Open bulk enquiry list">
-              <Doc /><Badge n={count("enquiry")} />
-            </button>
-            <button className="icobtn" onClick={() => openDrawer("cart")} aria-label="Open cart">
-              <Cart /><Badge n={count("cart")} />
+            {/* One list, not two. Nothing is bought here, so a cart and a
+                separate enquiry list were the same thing wearing two icons. */}
+            <button className="icobtn" onClick={() => setOpen(true)} aria-label="Open your quote list">
+              <Cart /><Badge n={count} />
             </button>
             <Link to="/bulk-gifting" className="btn btn--solid btn--sm hdr__cta">Get a Quote</Link>
             <button className={cn("burger", menu && "on")} onClick={() => setMenu((m) => !m)}
