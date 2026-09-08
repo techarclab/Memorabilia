@@ -1,7 +1,9 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { StoreProvider } from "@/store/StoreContext";
+import { AuthProvider } from "@/store/AuthContext";
 import Home from "@/pages/Home";
 import Collections from "@/pages/Collections";
 import ProductPage from "@/pages/Product";
@@ -10,6 +12,11 @@ import BulkGifting from "@/pages/BulkGifting";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Enquiry from "@/pages/Enquiry";
+import Checkout from "@/pages/Checkout";
+
+// The team's pages, and the Firebase SDK they need, are a separate
+// download that storefront visitors never make.
+const Admin = lazy(() => import("@/pages/Admin"));
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -19,7 +26,8 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <StoreProvider>
+      <AuthProvider>
+        <StoreProvider>
         <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>
@@ -31,11 +39,18 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/enquiry" element={<Enquiry />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/admin" element={
+                <Suspense fallback={<div className="pgh"><div className="wrap"><p className="lede">Loading…</p></div></div>}>
+                  <Admin />
+                </Suspense>
+              } />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </BrowserRouter>
-      </StoreProvider>
+        </StoreProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -1,33 +1,76 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Check } from "@/lib/icons";
+import { Check, Info } from "@/lib/icons";
 import { useStore } from "@/store/StoreContext";
+import { NotConfigured, submit, type Kind } from "@/lib/db";
+import type { BasketLine } from "@/types";
 
 const OCCASIONS = ["Diwali / Festive", "Employee onboarding", "Client appreciation",
   "Conference / event", "Milestone or award", "Dealer / channel", "Other"];
 const BUDGETS = ["Under ₹800", "₹800 – ₹1,200", "₹1,200 – ₹1,600", "₹1,600 – ₹2,500",
   "Above ₹2,500", "Not decided"];
 
-export default function QuoteForm({ id }: { id: string }) {
+type State =
+  | { t: "idle" }
+  | { t: "sending" }
+  | { t: "sent"; ref: string }
+  | { t: "unsaved" }                    // no backend configured yet
+  | { t: "failed"; message: string };
+
+export default function QuoteForm({
+  id, kind = "enquiry", source, lines = [], onSent,
+}: {
+  id: string;
+  kind?: Kind;
+  source?: string;
+  lines?: BasketLine[];
+  onSent?: () => void;
+}) {
   const { say } = useStore();
-  const [sent, setSent] = useState(false);
+  const [state, setState] = useState<State>({ t: "idle" });
   const [f, setF] = useState({ name: "", co: "", em: "", ph: "", qty: "", occ: OCCASIONS[0],
     bud: BUDGETS[0], date: "", msg: "" });
 
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) =>
     setF((prev) => ({ ...prev, [k]: e.target.value }));
 
-  function submit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!f.name.trim() || !f.co.trim() || !/\S+@\S+\.\S+/.test(f.em)) {
       say("Please complete name, company and a valid work email");
       return;
     }
-    setSent(true);
+
+    setState({ t: "sending" });
+    const contact = {
+      name: f.name, company: f.co, email: f.em, phone: f.ph, qty: f.qty,
+      occasion: f.occ, budget: f.bud, needBy: f.date, message: f.msg,
+    };
+
+    try {
+      const ref = await submit(kind, source || id, contact, lines);
+      setState({ t: "sent", ref });
+      onSent?.();
+    } catch (err) {
+      if (err instanceof NotConfigured) {
+        // Say so plainly rather than showing a confirmation for something
+        // that was never sent — a buyer who thinks they have enquired and
+        // hears nothing back is worse off than one who knows to call.
+        setState({ t: "unsaved" });
+        return;
+      }
+      setState({
+        t: "failed",
+        message: err instanceof Error ? err.message : "Something went wrong",
+      });
+    }
   }
 
+  const busy = state.t === "sending";
+  const done = state.t === "sent" || state.t === "unsaved";
+
   return (
-    <form className="stack rv" id={id} onSubmit={submit} noValidate>
+    <form className="stack rv" id={id} onSubmit={onSubmit} noValidate>
       <div className="frow">
         <div className="field">
           <label htmlFor={`${id}-name`}>Your name</label>
@@ -78,23 +121,51 @@ export default function QuoteForm({ id }: { id: string }) {
           placeholder="Sets you are considering, branding requirements, delivery locations…" />
       </div>
 
-      {sent && (
+      {state.t === "sent" && (
         <div className="ok">
           <Check />
           <div>
-            <b style={{ color: "var(--t-1)", fontWeight: 700 }}>Enquiry received.</b>
+            <b style={{ color: "var(--t-1)", fontWeight: 700 }}>
+              {kind === "order" ? "Order received." : "Enquiry received."} Reference {state.ref}
+            </b>
             <p className="small" style={{ marginTop: 5 }}>
-              A member of the gifting team will respond within one working day with pricing and three
-              shortlisted sets.
+              Quote that reference if you call. A member of the gifting team will respond
+              within one working day{kind === "order" ? " to confirm stock and invoice you." : " with pricing and three shortlisted sets."}
             </p>
           </div>
         </div>
       )}
 
-      <button className="btn btn--solid btn--lg" type="submit" disabled={sent}>
-        {sent ? "Sent" : "Send Enquiry"}
+      {state.t === "unsaved" && (
+        <div className="ok">
+          <Info />
+          <div>
+            <b style={{ color: "var(--t-1)", fontWeight: 700 }}>Not sent — no backend connected yet</b>
+            <p className="small" style={{ marginTop: 5 }}>
+              This build has no Firebase project configured, so nothing was saved. Add the
+              project's keys to <code>.env</code> and this form will start recording enquiries.
+              In the meantime, email hello@memorabiliagifting.com.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {state.t === "failed" && (
+        <div className="ok" style={{ borderColor: "rgba(184,35,47,.35)" }}>
+          <Info />
+          <div>
+            <b style={{ color: "var(--t-1)", fontWeight: 700 }}>That did not send</b>
+            <p className="small" style={{ marginTop: 5 }}>
+              {state.message}. Please try again, or email hello@memorabiliagifting.com and
+              we will pick it up from there.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <button className="btn btn--solid btn--lg" type="submit" disabled={busy || done}>
+        {busy ? "Sending…" : done ? "Sent" : kind === "order" ? "Place Order Request" : "Send Enquiry"}
       </button>
-      <p className="note">This prototype does not transmit data. On the live site this posts to your CRM or inbox.</p>
     </form>
   );
 }

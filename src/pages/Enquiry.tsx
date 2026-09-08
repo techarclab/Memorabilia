@@ -7,7 +7,7 @@ import { usePageMotion } from "@/hooks/useMotion";
 import { useStore } from "@/store/StoreContext";
 
 export default function Enquiry() {
-  const { enquiry } = useStore();
+  const { enquiry, clearBasket } = useStore();
   usePageMotion("enquiry");
 
   const total = enquiry.reduce((sum, it) => {
@@ -81,7 +81,8 @@ export default function Enquiry() {
             position: "sticky", top: "calc(var(--nav-h) + 22px)",
           }}>
             <h3 className="h3" style={{ marginBottom: 20 }}>Your details</h3>
-            <QuoteForm id="eForm" />
+            <QuoteForm id="eForm" source="enquiry-page" lines={enquiry}
+              onSent={() => clearBasket("enquiry")} />
           </div>
         </div>
       </div>

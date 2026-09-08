@@ -1,0 +1,107 @@
+rules_version = '2';
+
+/*
+  Memorabilia — Firestore security rules.
+
+  Written on the assumption that anyone on the internet will try these,
+  because anyone can: the web config is in the bundle, so these rules are
+  the only thing standing between the public and the data.
+
+  The shape of it:
+    enquiries, orders   the public may CREATE and nothing else. They cannot
+                        read what anyone else sent, cannot edit their own
+                        after the fact, cannot delete. Only an admin reads.
+    pricing             the world reads (the site needs it before paint),
+                        only an admin writes.
+    admins              nobody writes from a client, ever. Membership is
+                        granted from the console or a trusted server.
+
+  Note what create-only buys us. Without it, a competitor could list every
+  enquiry — who is buying, how many, at what budget — which is the most
+  commercially sensitive thing this business has.
+*/
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isString(v, max) {
+      return v is string && v.size() <= max;
+    }
+
+    // A submission has to look like a submission. Without this the
+    // collection is free storage for anyone who finds the project id.
+    function validContact(c) {
+      return c.keys().hasOnly(['name','company','email','phone','qty',
+                              'occasion','budget','needBy','message'])
+        && isString(c.name, 120) && c.name.size() > 0
+        && isString(c.company, 160) && c.company.size() > 0
+        && isString(c.email, 200) && c.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && isString(c.phone, 40)
+        && isString(c.qty, 20)
+        && isString(c.occasion, 80)
+        && isString(c.budget, 80)
+        && isString(c.needBy, 40)
+        && isString(c.message, 4000);
+    }
+
+    function validLine(l) {
+      return l.keys().hasOnly(['slug','code','name','qty','colour','brand','unit','total'])
+        && isString(l.slug, 40) && isString(l.code, 40) && isString(l.name, 120)
+        && isString(l.colour, 40) && isString(l.brand, 20)
+        && l.qty is int && l.qty > 0 && l.qty <= 100000
+        && l.unit is number && l.unit >= 0
+        && l.total is number && l.total >= 0;
+    }
+
+    function validSubmission(d, kind) {
+      return d.keys().hasOnly(['kind','source','contact','lines','indicativeTotal',
+                              'status','createdAt','userAgent','ref'])
+        && d.kind == kind
+        && isString(d.source, 60)
+        && isString(d.ref, 40)
+        && isString(d.userAgent, 300)
+        && d.status == 'new'                       // nobody self-serves a status
+        && d.createdAt == request.time             // and nobody backdates
+        && validContact(d.contact)
+        && d.lines is list && d.lines.size() <= 60
+        && d.indicativeTotal is number && d.indicativeTotal >= 0;
+    }
+
+    match /enquiries/{id} {
+      allow create: if validSubmission(request.resource.data, 'enquiry')
+                    && request.resource.data.lines.size() <= 60;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /orders/{id} {
+      // An order must actually order something.
+      allow create: if validSubmission(request.resource.data, 'order')
+                    && request.resource.data.lines.size() > 0;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Read by everyone because the storefront needs the corrected prices
+    // before it paints. Nothing here is private — it is a price list.
+    match /pricing/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Who counts as an admin is decided outside the app. Add a document
+    // whose id is the user's uid from the Firebase console.
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Anything not named above is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -6,7 +6,7 @@ import { money } from "@/lib/utils";
 import { useStore } from "@/store/StoreContext";
 
 export default function CartDrawer() {
-  const { drawer, closeDrawer, lines, remove, setQty, moveCartToEnquiry, say } = useStore();
+  const { drawer, closeDrawer, lines, remove, setQty, moveCartToEnquiry } = useStore();
   const kind = drawer ?? "cart";
   const list = lines(kind);
   const open = drawer !== null;
@@ -88,8 +88,8 @@ export default function CartDrawer() {
             {kind === "cart" ? (
               <>
                 <p className="small" style={{ marginBottom: 16 }}>Excl. GST · shipping calculated at checkout</p>
-                <button className="btn btn--solid btn--block"
-                  onClick={() => say("Checkout is not wired up in this prototype")}>Proceed to Checkout</button>
+                <Link to="/checkout" className="btn btn--solid btn--block"
+                  onClick={closeDrawer}>Proceed to Checkout</Link>
                 <button className="btn btn--ghost btn--block btn--sm" style={{ marginTop: 10 }}
                   onClick={moveCartToEnquiry}>Move to bulk enquiry instead</button>
               </>

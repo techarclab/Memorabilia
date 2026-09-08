@@ -26,6 +26,7 @@ interface StoreValue {
   remove: (k: BasketKind, i: number) => void;
   setQty: (k: BasketKind, i: number, q: number) => void;
   moveCartToEnquiry: () => void;
+  clearBasket: (k: BasketKind) => void;
   openDrawer: (k: BasketKind) => void;
   closeDrawer: () => void;
   setQuickView: (slug: string | null) => void;
@@ -93,6 +94,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setter(kind)((prev) => prev.map((l, k) => (k === i ? { ...l, qty: Math.max(1, Math.min(100000, q || 1)) } : l)));
   }, []);
 
+  /** Empty a basket after its contents have been sent. */
+  const clearBasket = useCallback((kind: BasketKind) => {
+    setter(kind)([]);
+  }, []);
+
   const moveCartToEnquiry = useCallback(() => {
     setEnquiry((prev) => [
       ...prev,
@@ -107,10 +113,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     cart, enquiry, drawer, quickView, toast,
     lines: (k) => (k === "cart" ? cart : enquiry),
     count: (k) => (k === "cart" ? cart.reduce((a, b) => a + b.qty, 0) : enquiry.length),
-    add, remove, setQty, moveCartToEnquiry,
+    add, remove, setQty, moveCartToEnquiry, clearBasket,
     openDrawer: setDrawer, closeDrawer: () => setDrawer(null),
     setQuickView, say,
-  }), [cart, enquiry, drawer, quickView, toast, add, remove, setQty, moveCartToEnquiry, say]);
+  }), [cart, enquiry, drawer, quickView, toast, add, remove, setQty,
+       moveCartToEnquiry, clearBasket, say]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

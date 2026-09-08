@@ -133,3 +133,26 @@ export function tagLabel(p: Product): string {
   if (p.tags.includes("sustainable")) return "Bamboo";
   return "";
 }
+
+/* ------------------------------------------------------------------
+   Price overrides.
+
+   `mrp` in rows.json is a placeholder derived from piece count and
+   series — it is not JPP's trade pricing. Rather than move all 367 rows
+   into Firestore just to make numbers editable, the admin panel writes a
+   single map of slug -> price and this applies it over the bundle.
+
+   It is applied once, before React mounts (see main.tsx), so a price is
+   never rendered and then corrected under the reader.
+   ------------------------------------------------------------------ */
+export function applyPriceOverrides(mrp: Record<string, number>): number {
+  let n = 0;
+  for (const p of products) {
+    const v = mrp[p.slug];
+    if (typeof v === "number" && Number.isFinite(v) && v > 0 && v !== p.mrp) {
+      p.mrp = v;
+      n++;
+    }
+  }
+  return n;
+}
