@@ -107,22 +107,28 @@ export default function Hero() {
         <div className="hero__art" ref={art}
           onMouseEnter={() => { paused.current = true; }}
           onMouseLeave={() => { paused.current = false; }}>
-          {heroSlides.map((h, k) => (
-            <img key={h.slug} src={h.img} alt={`${h.name} gift set in ${h.colour}`}
-              className={k === i ? "on" : undefined} />
-          ))}
-          <div className="hero__tag">
-            <span className="mono">{slide.code}</span>
-            <b>{slide.name}</b>
-            <span className="small">{slide.colour} · from {slide.price}</span>
-          </div>
-          <div className="hswatch">
+          {/* The line-sheet page carries its own code badge and colour strip, so
+              the caption and the swatch control sit under it rather than on top. */}
+          <div className="hero__frame">
             {heroSlides.map((h, k) => (
-              <button key={h.slug} className={k === i ? "on" : undefined}
-                style={{ background: colourHex[h.colour] || "#888" }} aria-label={h.colour}
-                onClick={() => { setI(k); t0.current = performance.now(); }} />
+              <img key={h.slug} src={h.img} alt={`${h.name} gift set in ${h.colour}`}
+                className={k === i ? "on" : undefined} />
             ))}
-            <span className="hswatch__bar"><i ref={bar} /></span>
+          </div>
+          <div className="hero__meta">
+            <div className="hero__tag">
+              <span className="mono">{slide.code}</span>
+              <b>{slide.name}</b>
+              <span className="small">{slide.colour} · from {slide.price}</span>
+            </div>
+            <div className="hswatch">
+              {heroSlides.map((h, k) => (
+                <button key={h.slug} className={k === i ? "on" : undefined}
+                  style={{ background: colourHex[h.colour] || "#888" }} aria-label={h.colour}
+                  onClick={() => { setI(k); t0.current = performance.now(); }} />
+              ))}
+              <span className="hswatch__bar"><i ref={bar} /></span>
+            </div>
           </div>
         </div>
       </div>

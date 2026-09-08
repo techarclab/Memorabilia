@@ -61,9 +61,13 @@ export const Clock = (p: P) => (
 export const Info = (p: P) => (
   <svg {...sm(13)} strokeWidth={1.9} {...p}><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
 );
+/** A trolley, not a bag — it has to read as "cart" at 19px in the header. */
 export const Cart = (p: P) => (
-  <svg {...sm(19)} strokeWidth={1.3} {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z" />
-    <path d="M3 6h18M16 10a4 4 0 0 1-8 0" /></svg>
+  <svg {...sm(20)} strokeWidth={1.5} {...p}>
+    <path d="M2.5 3h2.1l2.2 10.6a1.7 1.7 0 0 0 1.7 1.4h8.2a1.7 1.7 0 0 0 1.7-1.3L20.2 7H5.6" />
+    <circle cx="9.5" cy="19.5" r="1.6" />
+    <circle cx="17" cy="19.5" r="1.6" />
+  </svg>
 );
 export const Doc = (p: P) => (
   <svg {...sm(19)} strokeWidth={1.3} {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

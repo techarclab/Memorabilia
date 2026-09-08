@@ -94,12 +94,39 @@ replaced with something real.
 
 ### On product photography
 
-The 367 images are crops of the client's own catalogue pages. They are not studio
-quality and several carry printed text from the line sheet. They should be
-reshot. Do **not** replace them with AI-generated product images: buyers order
-by SKU code, and a photograph that does not match what arrives is a returns and
-trust problem. AI is fine for atmosphere, lifestyle and texture — never for the
-product itself.
+Each of the 367 images is a complete page from the client's line sheets —
+title, code badge, product shot, colour swatches and feature strip, exactly as
+printed. Nothing is cropped away.
+
+`tools/extract/` holds both cuts:
+
+* `full.py` — what ships. Renders every page, trims any blank paper margin, and
+  pads the result out to one 3:4 canvas so a grid of them lines up. The pages
+  are not all the same shape (the gift-set sheets are A4, the luxury sheets are
+  nearly square), and they are **padded** to the common shape rather than
+  cropped to it, with the pad colour sampled from each page's own border so a
+  cream sheet pads cream and a black sheet pads black. The site's frames are
+  3:4 to match, so `object-fit` has nothing left to trim.
+* `band.py` + `run.py` — a tighter cut that finds the product and drops the page
+  furniture, if the full sheets ever feel too busy. It measures how much of each
+  row differs from the page's ground and keeps the longest unbroken run, since a
+  product covers a wide band of rows and a line of type never does. Run it, point
+  `public/assets/img` at its output, and set every `aspect-ratio` in
+  `src/styles/jpp.css` back to `1.5`.
+
+Two things to know about shipping the full sheets. The pages carry **JPP**
+branding in their artwork, so that name is visible on the site even though the
+site itself now reads Memorabilia — if the rename is meant to reach customers,
+the sheets need re-laying out or the tighter cut needs using. And the pages
+repeat information the site already shows: the code appears in the badge and
+under the product name, the colourways appear both in the swatch strip and in
+the card's dots.
+
+These are catalogue pages, not studio photography, and the products deserve a
+proper shoot when there is budget. Do **not** replace them with AI-generated
+product images: buyers order by SKU code, and a photograph that does not match
+what arrives is a returns and trust problem. AI is fine for atmosphere,
+lifestyle and texture — never for the product itself.
 
 ### Still uncatalogued
 
