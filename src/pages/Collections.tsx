@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
 import RangeMatrix from "@/components/shop/RangeMatrix";
@@ -78,7 +78,9 @@ export default function Collections() {
 
   /* The URL is the entry point: /collections?pieces=4&flask=1 comes in from
      the range matrix, the footer and the home page categories. */
-  useEffect(() => {
+  // Apply a deep-linked size before the browser paints. Previously a click on
+  // 3-in-1 could flash the unfiltered grid (including 2-in-1 sets) first.
+  useLayoutEffect(() => {
     const next = { ...EMPTY };
     /* Every filter reads from the URL, and every one accepts a
        comma-separated list — so a category tile can point at a
@@ -316,7 +318,7 @@ export default function Collections() {
       <div style={{ height: "clamp(60px,8vw,110px)" }} />
       <SectionCta
         title="Not sure which set fits the brief?"
-        body="Send us the occasion, the headcount and the budget. We will come back with three options and mock-ups within a day."
+        body="Send us the occasion, number of gifts and your budget. We will come back with three options and personalisation ideas within a day."
       />
     </div>
   );

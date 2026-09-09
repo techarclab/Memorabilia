@@ -11,10 +11,9 @@
    ------------------------------------------------------------------ */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import type { BasketLine } from "@/types";
-import { bySlug } from "@/data/catalog";
+import type { AddItem, BasketLine } from "@/types";
 
-const KEY = "memorabilia.quote.v1";
+const KEY = "memorabilia.quote.v2";
 
 /** The smallest order the works will run for a branded job. */
 export const MOQ = 25;
@@ -26,7 +25,7 @@ interface StoreValue {
   quickView: string | null;
   toast: string;
   has: (slug: string) => boolean;
-  add: (slug: string, qty?: number, colour?: string, brand?: string) => void;
+  add: (item: AddItem, qty?: number, colour?: string, brand?: string) => void;
   remove: (i: number) => void;
   setQty: (i: number, q: number) => void;
   clear: () => void;
@@ -66,22 +65,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     timer.current = window.setTimeout(() => setToast(""), 2800);
   }, []);
 
-  const add: StoreValue["add"] = useCallback((slug, qty, colour, brand) => {
-    const p = bySlug(slug);
-    if (!p) return;
+  const add: StoreValue["add"] = useCallback((item, qty, colour, brand) => {
+    if (!item?.slug) return;
     const q = Math.max(MOQ, qty || MOQ);
-    const c = colour || p.colours[0];
+    const c = colour || "As shown";
     const b = brand || "emboss";
     setLines((prev) => {
-      const i = prev.findIndex((l) => l.slug === slug && l.colour === c && l.brand === b);
+      const i = prev.findIndex((l) => l.slug === item.slug && l.colour === c && l.brand === b);
       if (i > -1) {
         const next = prev.slice();
         next[i] = { ...next[i], qty: next[i].qty + q };
         return next;
       }
-      return [...prev, { slug, qty: q, colour: c, brand: b }];
+      return [...prev, { ...item, qty: q, colour: c, brand: b }];
     });
-    say(`${p.name} added to your quote list`);
+    say(`${item.name} added to your quote list`);
     setOpen(true);
   }, [say]);
 

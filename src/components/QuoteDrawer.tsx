@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Doc, X } from "@/lib/icons";
-import { brandingMethods, bySlug, piecesMeta } from "@/data/catalog";
+import { brandingMethods } from "@/data/catalog";
 import { MOQ, useStore } from "@/store/StoreContext";
 
 /**
@@ -57,18 +57,13 @@ export default function QuoteDrawer() {
               </Link>
             </div>
           ) : lines.map((it, i) => {
-            const p = bySlug(it.slug);
-            if (!p) return null;
             const b = brandingMethods.find((x) => x.id === it.brand);
             return (
               <div className="ci" key={`${it.slug}-${it.colour}-${it.brand}`}>
-                <img src={p.img} alt="" />
+                <img src={it.img} alt="" />
                 <div>
-                  <div className="ci__n">{p.name}</div>
-                  <div className="ci__m">
-                    {p.code} · {it.colour} · {b?.name}
-                    {p.pieces ? ` · ${piecesMeta[p.pieces]?.label ?? `${p.pieces}-in-1`}` : ""}
-                  </div>
+                  <div className="ci__n">{it.name}</div>
+                  <div className="ci__m">{it.code} · {it.colour} · {b?.name} · {it.line}</div>
                   <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 12 }}>
                     <span className="qty">
                       <button onClick={() => setQty(i, step(it.qty, -1))} aria-label="Decrease">−</button>

@@ -201,6 +201,82 @@ export function useFrameParallax(dep?: unknown) {
   }, [dep]);
 }
 
+/**
+ * Scroll progress through a pinned section, 0 → 1.
+ *
+ * The section is taller than the viewport and its inner panel is sticky,
+ * so scrolling through it advances a story rather than moving past one.
+ * Returns nothing directly — it writes `--p` on the element and calls back
+ * with the step, because reading scroll into React state on every frame is
+ * how a scroll handler ends up janky.
+ */
+export function useScrollScene(
+  ref: React.RefObject<HTMLElement>,
+  steps: number,
+  onStep: (i: number) => void,
+) {
+  const at = useRef(-1);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (reduced()) { onStep(steps - 1); return; }
+    let tick = false;
+    const run = () => {
+      const r = el.getBoundingClientRect();
+      const span = r.height - innerHeight;
+      // Below the breakpoint the section is no longer taller than the
+      // viewport and nothing is pinned, so there is no scroll to read.
+      // The steps are buttons there instead — driving them from here would
+      // fight the tap.
+      if (span <= 0) return;
+      const p = clamp(-r.top / span, 0, 1);
+      el.style.setProperty("--p", p.toFixed(4));
+      // Bias slightly forward so the last step is reached before the
+      // section lets go of the viewport, rather than at the exact end.
+      const i = clamp(Math.floor(p * steps * 1.06), 0, steps - 1);
+      if (i !== at.current) { at.current = i; onStep(i); }
+    };
+    const h = () => { if (!tick) { tick = true; requestAnimationFrame(() => { tick = false; run(); }); } };
+    addEventListener("scroll", h, { passive: true });
+    addEventListener("resize", h, { passive: true });
+    run();
+    return () => { removeEventListener("scroll", h); removeEventListener("resize", h); };
+  }, [ref, steps, onStep]);
+}
+
+/**
+ * A few degrees of tilt towards the cursor on `.tilt3` cards.
+ *
+ * Deliberately small — two degrees reads as the card noticing you, ten
+ * reads as a demo of a tilt library.
+ */
+export function useTilt(dep?: unknown) {
+  useEffect(() => {
+    if (reduced() || coarse()) return;
+    const cleanups: (() => void)[] = [];
+    all<HTMLElement>(".tilt3").forEach((el) => {
+      const move = (e: MouseEvent) => {
+        const r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - .5;
+        const y = (e.clientY - r.top) / r.height - .5;
+        el.style.setProperty("--rx", `${(-y * 4).toFixed(2)}deg`);
+        el.style.setProperty("--ry", `${(x * 4).toFixed(2)}deg`);
+      };
+      const off = () => {
+        el.style.setProperty("--rx", "0deg");
+        el.style.setProperty("--ry", "0deg");
+      };
+      el.addEventListener("mousemove", move);
+      el.addEventListener("mouseleave", off);
+      cleanups.push(() => {
+        el.removeEventListener("mousemove", move);
+        el.removeEventListener("mouseleave", off);
+      });
+    });
+    return () => cleanups.forEach((c) => c());
+  }, [dep]);
+}
+
 /** Sticky header state and the thin gold reading-progress bar. */
 export function useHeaderBehaviour(locked: boolean) {
   const lockRef = useRef(locked);
@@ -238,6 +314,7 @@ export function usePageMotion(dep?: unknown) {
   useSpotlight(dep);
   useAmbient(dep);
   useFrameParallax(dep);
+  useTilt(dep);
 }
 
 export { clamp, lerp };

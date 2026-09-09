@@ -9,7 +9,7 @@ export default function Footer() {
 
   function subscribe() {
     if (/\S+@\S+\.\S+/.test(email)) { say(`Line sheet on its way to ${email}`); setEmail(""); }
-    else say("Please enter a valid work email");
+    else say("Please enter a valid email address");
   }
 
   return (
@@ -21,20 +21,20 @@ export default function Footer() {
               <Logo />
               <span className="logo__txt">
                 <span className="logo__name">Memorabilia</span>
-                <span className="logo__sub">Corporate Gifting</span>
+                <span className="logo__sub">Gifts for Every Occasion</span>
               </span>
             </Link>
             <p className="lede" style={{ marginTop: 20, fontSize: ".9rem" }}>
-              Corporate gift sets built around one idea — that the box a gift arrives in is part of the
-              gift. Curated, branded and delivered across India.
+              Beautiful gifts for celebrations, milestones, return gifts, events and everyday thank-yous.
+              Curated, personalised and delivered across India.
             </p>
             <div className="subs">
-              <input type="email" placeholder="Work email" aria-label="Work email"
+              <input type="email" placeholder="Email address" aria-label="Email address"
                 value={email} onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && subscribe()} />
               <button className="btn btn--sm" onClick={subscribe}>Catalogue</button>
             </div>
-            <p className="small" style={{ marginTop: 10 }}>Get the current line sheet with trade pricing.</p>
+            <p className="small" style={{ marginTop: 10 }}>Get new gifting ideas, catalogue updates and event inspiration.</p>
           </div>
 
           <div>
@@ -45,6 +45,18 @@ export default function Footer() {
               <li><Link to="/collections?tag=bestseller">Bestsellers</Link></li>
               <li><Link to="/collections?tag=new">New Arrivals</Link></li>
               <li><Link to="/collections?tag=sustainable">Bamboo &amp; Sustainable</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5>Products</h5>
+            <ul>
+              <li><Link to="/ranges/bags">Bags</Link></li>
+              <li><Link to="/ranges/bottles">Bottles &amp; Sippers</Link></li>
+              <li><Link to="/ranges/mugs">Mugs &amp; Tumblers</Link></li>
+              <li><Link to="/ranges/diaries">Diaries</Link></li>
+              <li><Link to="/ranges/electronics">Electronics</Link></li>
+              <li><Link to="/ranges">All products</Link></li>
             </ul>
           </div>
 
@@ -67,7 +79,7 @@ export default function Footer() {
               <a href="mailto:hello@memorabiliagifting.com" className="gold">hello@memorabiliagifting.com</a>
             </p>
             <p className="small" style={{ marginTop: 18, lineHeight: 1.8 }}>
-              Corporate Gifting Division<br />India — pan-India despatch
+              Gifts for Every Occasion<br />India — pan-India despatch
             </p>
           </div>
         </div>

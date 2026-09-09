@@ -19,8 +19,8 @@ export default function Contact() {
             <span className="eyebrow">Talk to us</span>
             <h1 className="h1">Start a<br />conversation</h1>
             <p className="lede">
-              Send the brief, ask for a sample, or just ask what would work for two hundred people
-              and a ₹1,400 budget. We answer within a working day.
+              Tell us about your celebration, event or gifting idea. We can help with one special gift
+              or hundreds of return gifts, and answer within a working day.
             </p>
             <div className="grid" style={{ gridTemplateColumns: "1fr", gap: 0, marginTop: 14 }}>
               {CHANNELS.map(([label, value, note, href]) => (
@@ -33,10 +33,10 @@ export default function Contact() {
               ))}
             </div>
             <div style={{ marginTop: 26, border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 26 }}>
-              <h4 style={{ color: "var(--t-1)", marginBottom: 8 }}>Corporate Gifting Division</h4>
+              <h4 style={{ color: "var(--t-1)", marginBottom: 8 }}>Gifts for Every Occasion</h4>
               <p style={{ color: "var(--t-2)", fontSize: ".9rem", lineHeight: 1.8 }}>
                 Memorabilia — Premium Gifting Solutions<br />Pan-India despatch · GST invoicing<br />
-                Enterprise and government supply on request
+                Personal, event and bulk gifting support
               </p>
             </div>
           </div>

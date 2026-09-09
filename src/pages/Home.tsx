@@ -1,14 +1,21 @@
 import { Link } from "react-router-dom";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
+import Marquee from "@/components/home/Marquee";
+import SizeStory from "@/components/home/SizeStory";
+import BriefBuilder from "@/components/home/BriefBuilder";
 import Testimonials from "@/components/home/Testimonials";
 import { Arw, Check, Clock, Info, Layers, Pencil, Play, Users } from "@/lib/icons";
 import { bySlug, giftSets } from "@/data/catalog";
 import { occasions } from "@/data/categories";
+import { rangeCats } from "@/data/ranges";
 import { usePageMotion } from "@/hooks/useMotion";
 import { useStore } from "@/store/StoreContext";
 
 const img = (slug: string) => (bySlug(slug) || giftSets[0]).img;
+const PRODUCT_CATEGORIES = ["bags", "bottles", "mugs", "electronics"]
+  .map((id) => rangeCats.find((category) => category.id === id))
+  .filter(Boolean);
 
 export default function Home() {
   const { say } = useStore();
@@ -20,22 +27,49 @@ export default function Home() {
 
       <Categories />
 
+      <Marquee />
+
+      <section className="section home-products" data-tone="Blue">
+        <div className="wrap">
+          <div className="shead shead--split shead--top rv">
+            <div className="stack">
+              <span className="eyebrow">Beyond the box</span>
+              <h2 className="h2 split">Products for every<br />kind of giving</h2>
+              <p className="lede">From work bags and bottles to mugs, desk pieces and electronics, every item can stand alone or become part of a thoughtful gift.</p>
+            </div>
+            <Link to="/ranges" className="lnk">Explore all products <Arw /></Link>
+          </div>
+          <div className="rcats home-products__grid">
+            {PRODUCT_CATEGORIES.map((category, i) => category && (
+              <Link key={category.id} to={`/ranges/${category.id}`} className={`rcat rv rv-d${i + 1}`}>
+                <span className="rcat__img"><img src={category.img} alt="" loading="lazy" decoding="async" /><em className="cat__n">{category.count}</em></span>
+                <span className="rcat__b"><b>{category.name}</b><span>{category.blurb}</span><i className="rcat__go">Explore <Arw /></i></span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The range's core idea, told by scrolling rather than asserted in a
+          paragraph. It sits here because everything below assumes you have
+          understood it. */}
+      <SizeStory />
+
       <section className="feat">
         <div className="wrap">
           <div className="feat__in">
             <div className="feat__copy rv">
-              <span className="eyebrow">Custom corporate gifting</span>
+              <span className="eyebrow">Personalised gifting</span>
               <h2 className="h1 split" style={{ margin: "14px 0 16px" }}>
                 Make a<br />Lasting Impression
               </h2>
               <p className="lede">
-                Every cover design runs across the whole range, so you choose the look first and the
-                budget second — the same set as a two-piece for the wider team and a five-piece for
-                the leadership.
+                Choose a gift that feels personal, whether it is for a wedding, a birthday, a return
+                gift, a festive gathering or a large event. One beautiful look can suit every budget.
               </p>
               <div className="hero__cta" style={{ marginTop: 24 }}>
-                <span className="mag"><Link to="/bulk-gifting" className="btn btn--solid">Get a Custom Quote</Link></span>
-                <Link to="/bulk-gifting" className="btn btn--white">Explore Our Process</Link>
+                <span className="mag"><Link to="/bulk-gifting" className="btn btn--solid">Plan Your Gifts</Link></span>
+                <Link to="/bulk-gifting" className="btn btn--white">Explore Customisation</Link>
               </div>
               <div className="feat__pills">
                 <span className="pill-i"><Pencil />Design Support</span>
@@ -46,7 +80,7 @@ export default function Home() {
             <div className="feat__art rv">
               <span className="feat__arch" />
               <div className="feat__pic" data-para-img>
-                <img src={img("JPP-PREMIUM-5")} alt="Memorabilia flagship corporate gift set" />
+                <img src={img("JPP-PREMIUM-5")} alt="Memorabilia premium personalised gift set" />
               </div>
             </div>
           </div>
@@ -76,13 +110,15 @@ export default function Home() {
         </div>
       </section>
 
+      <BriefBuilder />
+
       <section className="proof">
         <div className="proof__bg"><img src={img("JPP-B4059")} alt="" /></div>
         <div className="wrap proof__in">
           <div className="proof__top">
             <div className="stack">
-              <span className="eyebrow">Trusted by industry leaders</span>
-              <h2 className="h1 split">Great Companies<br />Choose Great Gifts</h2>
+              <span className="eyebrow">Made for meaningful occasions</span>
+              <h2 className="h1 split">Every Celebration<br />Deserves a Great Gift</h2>
             </div>
             <button className="proof__watch" onClick={() => say("Brand film slot — drop the video in when it is shot")}>
               <span className="rbtn rbtn--play"><Play /></span>Watch Our Story
@@ -108,8 +144,8 @@ export default function Home() {
             <span className="eyebrow center">Ready to get started?</span>
             <h2 className="h1 split">Let&apos;s Create Something<br />Meaningful Together</h2>
             <p className="lede center" style={{ marginInline: "auto" }}>
-              Send the occasion, the headcount and the date. You get three options, mock-ups on
-              your own logo, and trade pricing at your volume — within one working day.
+              Send the occasion, number of gifts and the date. You get three thoughtful options and
+              clear personalisation details within one working day.
             </p>
             <span className="mag" style={{ marginTop: 8 }}>
               <Link to="/bulk-gifting" className="btn btn--solid btn--lg">Get a Quote Now</Link>

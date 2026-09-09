@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import QuoteForm from "@/components/QuoteForm";
 import { Arw, Check, Clock, Layers, Pencil, Shield, Sparkle, Tag2 } from "@/lib/icons";
@@ -5,7 +6,7 @@ import { brandingMethods, bySlug, giftSets } from "@/data/catalog";
 import { usePageMotion } from "@/hooks/useMotion";
 
 const STEPS: [string, string, string][] = [
-  ["Brief", "Tell us the occasion, the headcount, the budget per head and the date it must land. One email is enough to start.", "Same day"],
+  ["Brief", "Tell us the occasion, number of gifts, budget and date you need them. One message is enough to start.", "Same day"],
   ["Shortlist", "Three sets that fit, quoted at your actual volume — not a catalogue dump with a rate card attached.", "Within 24 hours"],
   ["Sample", "A physical sample, branded with your logo where you want it. Nothing is committed until you have held it.", "3–4 days"],
   ["Mock-up", "A digital proof on the actual product for each branding position. Production starts on your written approval.", "Same day as artwork"],
@@ -29,6 +30,14 @@ const KPI: [string, string, string][] = [
   ["14", "", "Days, worst case"],
 ];
 
+const EVENTS: [string, string, string, string, string][] = [
+  ["Weddings & return gifts", "A little something guests will remember long after the celebration.", "JPP-B4034", "3-in-1 sets", "/collections?pieces=3"],
+  ["Birthdays & anniversaries", "Personal, polished and ready to make a milestone feel special.", "JPP-4047", "Premium gift sets", "/collections?series=premium"],
+  ["Festive celebrations", "Warm finishes and generous details for every gathering.", "JPP-B5059", "Festive favourites", "/collections?tag=design"],
+  ["Parties & special events", "Easy-to-order favours with a look that feels considered.", "JPP-201", "2-in-1 sets", "/collections?pieces=2"],
+  ["Thank-yous & larger lists", "A flexible range for schools, teams, guests and community events.", "JPP-PREMIUM-5", "Complete gift sets", "/collections?pieces=5"],
+];
+
 /* Why there is no rate card on this site. Every one of these genuinely
    moves the per-piece figure, which is exactly why publishing one number
    would mislead more buyers than it helped. */
@@ -42,6 +51,9 @@ const QUOTE: [string, string][] = [
 export default function BulkGifting() {
   usePageMotion("bulk");
   const hero = bySlug("JPP-B4001") || giftSets[0];
+  const [eventIndex, setEventIndex] = useState(0);
+  const event = EVENTS[eventIndex];
+  const eventGift = bySlug(event[2]) || giftSets[0];
 
   return (
     <>
@@ -49,13 +61,13 @@ export default function BulkGifting() {
         <div className="phero__in">
           <div className="phero__copy">
             <div className="crumb" style={{ marginBottom: 6 }}>
-              <Link to="/">Home</Link><span>/</span><span className="gold">Bulk &amp; Branding</span>
+              <Link to="/">Home</Link><span>/</span><span className="gold">Events &amp; Custom Gifts</span>
             </div>
-            <span className="eyebrow">For procurement, HR &amp; marketing teams</span>
-            <h1>Gifting at scale, without the coordination.</h1>
+            <span className="eyebrow">For celebrations, events and larger gift lists</span>
+            <h1>Custom gifts, made simple.</h1>
             <p className="lede">
-              Twenty-five pieces or five thousand — the process is the same either way. Because the
-              thing that goes wrong in corporate gifting is never the product. It is the coordination.
+              From a special return gift to a celebration for five thousand guests, we help you choose,
+              personalise and deliver gifts without the coordination becoming a burden.
             </p>
             <div className="hero__cta" style={{ marginTop: 24 }}>
               <span className="mag"><a href="#brief" className="btn btn--solid btn--lg">Start a brief <Arw /></a></span>
@@ -83,6 +95,45 @@ export default function BulkGifting() {
           ))}
         </div>
       </div>
+
+      <section className="section eventx" data-tone="Red">
+        <div className="wrap">
+          <div className="shead shead--split rv" style={{ marginBottom: "clamp(22px,2.8vw,34px)" }}>
+            <div className="stack">
+              <span className="eyebrow">Find your occasion</span>
+              <h2 className="h1 split">A gift that fits<br />the moment</h2>
+            </div>
+            <p className="lede" style={{ maxWidth: "40ch" }}>
+              Start with the celebration. We will help you find the right gift, finish and quantity from there.
+            </p>
+          </div>
+
+          <div className="eventx__in rv">
+            <div className="eventx__tabs" role="tablist" aria-label="Choose an occasion">
+              {EVENTS.map(([label], index) => (
+                <button key={label} role="tab" aria-selected={eventIndex === index}
+                  className={eventIndex === index ? "on" : undefined}
+                  onClick={() => setEventIndex(index)}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>{label}
+                </button>
+              ))}
+            </div>
+
+            <div className="eventx__preview spot" key={event[0]}>
+              <div className="eventx__copy">
+                <span className="eyebrow">Selected occasion</span>
+                <h3>{event[0]}</h3>
+                <p>{event[1]}</p>
+                <Link className="lnk" to={event[4]}>Explore {event[3]} <Arw /></Link>
+              </div>
+              <div className="eventx__img">
+                <img src={eventGift.img} alt={`${eventGift.name} gift set for ${event[0]}`} />
+                <span>{event[3]}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="section band band--mint" data-tone="Tan">
         <div className="wrap">
@@ -115,8 +166,8 @@ export default function BulkGifting() {
               <h2 className="h2">Why you will not find a price on this site</h2>
             </div>
             <p className="lede" style={{ maxWidth: "44ch" }}>
-              We only take bulk orders, and four things move the per-piece figure. A number printed
-              on a product card would be wrong for almost everyone reading it.
+              Personalisation, quantity, packaging and delivery needs all shape the final cost. Tell us
+              your occasion and we will give you a clear quote that fits it.
             </p>
           </div>
 
@@ -130,7 +181,7 @@ export default function BulkGifting() {
             ))}
           </div>
           <p className="note rv" style={{ marginTop: 16 }}>
-            Send the brief and you have real trade pricing, at your volume, within one working day.
+            Send your idea and receive clear options and pricing within one working day.
           </p>
         </div>
       </section>

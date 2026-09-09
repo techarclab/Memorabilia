@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 const NAV: [string, string][] = [
   ["/collections", "Gift Sets"],
-  ["/accessories", "Accessories"],
-  ["/bulk-gifting", "Bulk & Branding"],
+  ["/ranges", "Products"],
+  ["/bulk-gifting", "Events & Custom Gifts"],
   ["/about", "Our Story"],
   ["/contact", "Contact"],
 ];
@@ -32,7 +32,8 @@ export default function Header() {
   /* Three nav items point at /collections with different filters, so the
      current one is decided by path *and* query — not by path alone. */
   const here = loc.pathname + (loc.search || "");
-  const current = NAV.map(([to]) => to).find((to) => to === here);
+  const current = NAV.map(([to]) => to).find(
+    (to) => to === here || (to !== "/" && loc.pathname.startsWith(to + "/")));
 
   useEffect(() => { setMenu(false); }, [loc.pathname, loc.search]);
   useEffect(() => {
@@ -52,11 +53,11 @@ export default function Header() {
     <>
       <div className="topbar">
         <div className="topbar__in">
-          <span className="topbar__l"><Shield /><span>Trusted by procurement teams across India</span></span>
+          <span className="topbar__l"><Shield /><span>Thoughtful gifting for every occasion</span></span>
           <span className="topbar__r">
-            <Link to="/bulk-gifting">Bulk Orders</Link><i />
+            <Link to="/bulk-gifting">Events &amp; Bulk Gifts</Link><i />
             <span>Pan-India Delivery</span><i />
-            <Link to="/contact">Corporate Support</Link>
+            <Link to="/contact">Gifting Support</Link>
           </span>
         </div>
       </div>
@@ -67,7 +68,7 @@ export default function Header() {
             <Logo />
             <span className="logo__txt">
               <span className="logo__name">Memorabilia</span>
-              <span className="logo__sub">Corporate Gifting</span>
+              <span className="logo__sub">Gifts for Every Occasion</span>
             </span>
           </Link>
 

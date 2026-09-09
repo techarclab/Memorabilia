@@ -5,8 +5,8 @@ import { useStore } from "@/store/StoreContext";
 import { NotConfigured, submit, type Kind } from "@/lib/db";
 import type { BasketLine } from "@/types";
 
-const OCCASIONS = ["Diwali / Festive", "Employee onboarding", "Client appreciation",
-  "Conference / event", "Milestone or award", "Dealer / channel", "Other"];
+const OCCASIONS = ["Wedding / return gifts", "Birthday or anniversary", "Baby shower or naming ceremony",
+  "Diwali / festive", "Party or special event", "Employee or client gifting", "Other"];
 const BUDGETS = ["Under ₹800", "₹800 – ₹1,200", "₹1,200 – ₹1,600", "₹1,600 – ₹2,500",
   "Above ₹2,500", "Not decided"];
 
@@ -36,8 +36,8 @@ export default function QuoteForm({
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!f.name.trim() || !f.co.trim() || !/\S+@\S+\.\S+/.test(f.em)) {
-      say("Please complete name, company and a valid work email");
+    if (!f.name.trim() || !/\S+@\S+\.\S+/.test(f.em)) {
+      say("Please complete your name and a valid email address");
       return;
     }
 
@@ -77,14 +77,14 @@ export default function QuoteForm({
           <input id={`${id}-name`} value={f.name} onChange={set("name")} placeholder="Full name" required />
         </div>
         <div className="field">
-          <label htmlFor={`${id}-co`}>Company</label>
-          <input id={`${id}-co`} value={f.co} onChange={set("co")} placeholder="Organisation" required />
+          <label htmlFor={`${id}-co`}>Organisation or event name <span className="small">(optional)</span></label>
+          <input id={`${id}-co`} value={f.co} onChange={set("co")} placeholder="e.g. Sharma wedding" />
         </div>
       </div>
       <div className="frow">
         <div className="field">
-          <label htmlFor={`${id}-em`}>Work email</label>
-          <input id={`${id}-em`} type="email" value={f.em} onChange={set("em")} placeholder="name@company.com" required />
+          <label htmlFor={`${id}-em`}>Email</label>
+          <input id={`${id}-em`} type="email" value={f.em} onChange={set("em")} placeholder="you@example.com" required />
         </div>
         <div className="field">
           <label htmlFor={`${id}-ph`}>Phone</label>
@@ -94,7 +94,7 @@ export default function QuoteForm({
       <div className="frow">
         <div className="field">
           <label htmlFor={`${id}-qty`}>Quantity</label>
-          <input id={`${id}-qty`} type="number" min={25} value={f.qty} onChange={set("qty")} placeholder="e.g. 250" />
+          <input id={`${id}-qty`} type="number" min={1} value={f.qty} onChange={set("qty")} placeholder="e.g. 50" />
         </div>
         <div className="field">
           <label htmlFor={`${id}-occ`}>Occasion</label>
@@ -118,7 +118,7 @@ export default function QuoteForm({
       <div className="field">
         <label htmlFor={`${id}-msg`}>Anything else</label>
         <textarea id={`${id}-msg`} value={f.msg} onChange={set("msg")}
-          placeholder="Sets you are considering, branding requirements, delivery locations…" />
+          placeholder="Gift ideas, personalisation, delivery date or anything else…" />
       </div>
 
       {state.t === "sent" && (

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Arw, ItemIcon, X } from "@/lib/icons";
 import { bySlug, lineLabel, piecesMeta } from "@/data/catalog";
 import { useStore } from "@/store/StoreContext";
+import { giftSetItem } from "@/lib/items";
 import { Swatches } from "./ProductCard";
 
 export default function QuickView() {
@@ -42,7 +43,7 @@ export default function QuickView() {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button className="btn btn--solid" onClick={() => { add(p.slug, 100); setQuickView(null); }}>
+                <button className="btn btn--solid" onClick={() => { add(giftSetItem(p), 100); setQuickView(null); }}>
                   Add to quote list
                 </button>
               </div>

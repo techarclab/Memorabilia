@@ -5,6 +5,7 @@ import { Arw, Box, ItemIcon } from "@/lib/icons";
 import {
   brandingMethods, bySlug, colourHex, families, giftSets, lineLabel, piecesMeta, products,
 } from "@/data/catalog";
+import { giftSetItem } from "@/lib/items";
 import { setTone, usePageMotion } from "@/hooks/useMotion";
 import { MOQ, useStore } from "@/store/StoreContext";
 import NotFound from "./NotFound";
@@ -168,7 +169,7 @@ export default function ProductPage() {
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button className="btn btn--solid" style={{ flex: 1, minWidth: 180 }}
-                onClick={() => add(p.slug, Math.max(MOQ, qty), colour, brand)}>
+                onClick={() => add(giftSetItem(p), Math.max(MOQ, qty), colour, brand)}>
                 Add to quote list
               </button>
               <Link to="/contact" className="btn" style={{ flex: 1, minWidth: 180 }}>

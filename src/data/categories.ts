@@ -49,7 +49,7 @@ const SIZE_NOTE: Record<number, string> = {
   2: "Notebook and pen. The wide-team set.",
   3: "Adds a keychain or a flask.",
   4: "Adds a card holder. The safe default.",
-  5: "The full kit, for leadership.",
+  5: "The full kit, for the biggest celebrations.",
 };
 
 const RANGE_NOTE: Record<Series, string> = {
@@ -60,11 +60,25 @@ const RANGE_NOTE: Record<Series, string> = {
   luxury: "Flagship sets, wireless charging included.",
 };
 
+/* The fourteen supplier books, as a fifth view. These are named and counted
+   by hand rather than read from src/data/ranges.ts on purpose: importing
+   that module here would pull 505 products' worth of codes and specs into
+   the home page's first download, for a strip of six tiles. The counts are
+   asserted by a test instead, so they cannot drift unnoticed. */
+const RANGE_TILES: [string, string, string, number][] = [
+  ["Bags", "Laptop, office and jute carry bags.", "bags", 26],
+  ["Bottles & Sippers", "Vacuum steel, aluminium and tritan.", "bottles", 81],
+  ["Mugs & Tumblers", "Insulated steel, bamboo and ceramic.", "mugs", 58],
+  ["Diaries", "A5 hardcovers in vegan leather and fabric.", "diaries", 64],
+  ["Electronics", "Chargers, clocks, lamps and audio.", "electronics", 78],
+  ["Metal Pens", "Ball pens with stylus and bamboo grips.", "metal-pens", 61],
+];
+
 export const catGroups: CatGroup[] = [
   {
     id: "size",
     label: "By set size",
-    note: "The first thing procurement decides: how much goes in each box. Every cover design is made in every size, so this is a budget choice rather than a design one.",
+    note: "Start with how much you would like to include in each box. Every cover design is made in every size, so this is a budget choice rather than a design one.",
     cats: keep([2, 3, 4, 5].map((n) =>
       cat(piecesMeta[n].label, SIZE_NOTE[n], `/collections?pieces=${n}`, (p) => p.pieces === n))),
   },
@@ -82,7 +96,7 @@ export const catGroups: CatGroup[] = [
     cats: keep([
       cat("With a flask or bottle", "Vacuum steel, 500 ml and 750 ml.",
         "/collections?flask=1", (p) => p.flask),
-      cat("With a card holder", "For client-facing and sales teams.",
+      cat("With a card holder", "A polished extra for a thoughtful gift.",
         "/collections?item=Card+Holder", (p) => p.contents.some((c) => c.includes("Card Holder"))),
       cat("With a keychain", "The small piece that gets used daily.",
         "/collections?item=Keychain", (p) => p.contents.some((c) => c.includes("Keychain"))),
@@ -107,6 +121,15 @@ export const catGroups: CatGroup[] = [
         "/accessories", () => true, accessories),
     ]),
   },
+  {
+    id: "ranges",
+    label: "Beyond the sets",
+    note: "Fourteen supplier catalogues of single products — bags, bottles, mugs, diaries, pens, keychains, desk pieces and electronics. Browsed page by page, quoted the same way.",
+    cats: RANGE_TILES.map(([label, note, id, count]) => ({
+      label, note, href: `/ranges/${id}`, count,
+      img: `/assets/img/ranges/${id}/${id === "metal-pens" ? "mp-002" : `${id}-001`}.webp`,
+    })),
+  },
 ];
 
 /* Occasion is a merchandising view, not a data field. Each one is a
@@ -118,16 +141,16 @@ const shot = (match: (p: Product) => boolean) =>
   (featured(giftSets.filter(match))[0] || giftSets[0]).img;
 
 export const occasions: Occasion[] = [
-  { label: "Employee appreciation", note: "Mid-size sets, ordered in volume",
+  { label: "Weddings & return gifts", note: "Elegant sets your guests will keep",
     href: "/collections?pieces=3", img: shot((p) => p.pieces === 3) },
-  { label: "Client onboarding", note: "A card holder in the box",
+  { label: "Birthdays & anniversaries", note: "A thoughtful gift for a special day",
     href: "/collections?item=Card+Holder", img: shot((p) => p.contents.some((c) => c.includes("Card Holder"))) },
-  { label: "Festive gifting", note: "The design-led covers",
+  { label: "Festive celebrations", note: "Design-led gifts for every gathering",
     href: "/collections?tag=design", img: shot((p) => p.tags.includes("design")) },
-  { label: "Work anniversaries", note: "The five-piece sets",
+  { label: "Milestones & special moments", note: "A complete gift for a big occasion",
     href: "/collections?pieces=5", img: shot((p) => p.pieces === 5) },
-  { label: "Conferences & delegate kits", note: "Two-piece, light to ship",
+  { label: "Events & party favours", note: "Beautiful sets for every guest",
     href: "/collections?pieces=2", img: shot((p) => p.pieces === 2) },
-  { label: "CSR & sustainability", note: "Bamboo and steel",
+  { label: "Sustainable gifting", note: "Bamboo and steel, thoughtfully chosen",
     href: "/collections?tag=sustainable", img: shot((p) => p.tags.includes("sustainable")) },
 ];

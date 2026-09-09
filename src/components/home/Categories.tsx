@@ -3,18 +3,19 @@ import { Link } from "react-router-dom";
 import { Arw } from "@/lib/icons";
 import { useReveal } from "@/hooks/useMotion";
 import { catGroups } from "@/data/categories";
-import { giftSets } from "@/data/catalog";
 
 /**
  * The category explorer.
  *
- * Four ways into the same 355 sets, because four different people arrive
- * with four different first questions — how big, which line, what is in
- * it, how does it read. Switching a tab is instant and changes nothing
- * else on the page, so it costs a visitor nothing to look.
+ * Five ways in, because five different people arrive with five different
+ * first questions — how big, which line, what is in it, how does it read,
+ * and "do you do anything other than gift sets". Switching a tab is
+ * instant and changes nothing else on the page, so it costs a visitor
+ * nothing to look.
  *
- * Every count is computed from the catalogue at build time, and every
- * tile links to the exact filter it names.
+ * Every count is real, and every tile links to the exact filter or range
+ * it names — a tile that promised more than the grid behind it holds
+ * would be worse than no tile at all.
  */
 export default function Categories() {
   const [tab, setTab] = useState(catGroups[0].id);
@@ -34,7 +35,7 @@ export default function Categories() {
             <h2 className="h2 split">Browse by category</h2>
           </div>
           <div className="shead__nav">
-            <Link to="/collections" className="lnk">See all {giftSets.length} sets <Arw /></Link>
+            <Link to="/collections" className="lnk">See all gift sets <Arw /></Link>
           </div>
         </div>
 
@@ -53,7 +54,7 @@ export default function Categories() {
 
           <div className="cats" key={group.id}>
             {group.cats.map((c, i) => (
-              <Link className={`cat rv rv-d${(i % 4) + 1}`} to={c.href} key={c.label}>
+              <Link className={`cat tilt3 rv rv-d${(i % 4) + 1}`} to={c.href} key={c.label}>
                 <span className="cat__img">
                   <img src={c.img} alt="" loading="lazy" decoding="async" />
                   <em className="cat__n">{c.count}</em>

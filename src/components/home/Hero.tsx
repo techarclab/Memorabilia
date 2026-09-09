@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { Link } from "react-router-dom";
 import { Arw, ArwL, Layers, Play, Shield, Tag2, Truck } from "@/lib/icons";
 import { bySlug, colourHex, lineLabel, products } from "@/data/catalog";
@@ -17,8 +18,15 @@ export const heroSlides = PICKS.map(([slug, colour]) => {
 });
 
 const TRUST = [
-  [Shield, "Premium Quality"], [Tag2, "Custom Branding"],
-  [Layers, "Bulk Order Support"], [Truck, "Pan-India Delivery"],
+  [Shield, "Premium Quality"], [Tag2, "Personalisation"],
+  [Layers, "Event & Bulk Orders"], [Truck, "Pan-India Delivery"],
+] as const;
+
+const BRANDING = [
+  ["Laser engraving", "A permanent, precise finish for metal and leather."],
+  ["UV colour print", "Full-colour artwork for bolder brand moments."],
+  ["Debossed logo", "A subtle, tactile mark pressed into the cover."],
+  ["Foil stamp", "A warm metallic detail for elevated occasions."],
 ] as const;
 
 /* Figures the catalogue itself can back up. There is deliberately no
@@ -37,6 +45,7 @@ const DURATION = 5200;
 export default function Hero() {
   const { say } = useStore();
   const [i, setI] = useState(0);
+  const [branding, setBranding] = useState(0);
   const art = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLElement>(null);
   const paused = useRef(false);
@@ -89,19 +98,34 @@ export default function Hero() {
 
   const slide = heroSlides[i];
 
+  const tiltArt = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (reduced() || !art.current) return;
+    const bounds = art.current.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+    art.current.style.setProperty("--hero-rx", `${(-y * 3).toFixed(2)}deg`);
+    art.current.style.setProperty("--hero-ry", `${(x * 3).toFixed(2)}deg`);
+  };
+
+  const resetArt = () => {
+    paused.current = false;
+    art.current?.style.setProperty("--hero-rx", "0deg");
+    art.current?.style.setProperty("--hero-ry", "0deg");
+  };
+
   return (
     <section className="hero">
       <span className="hero__glow" aria-hidden="true" />
 
       <div className="hero__in">
         <div className="hero__copy">
-          <span className="eyebrow">Corporate gifting, reimagined</span>
+          <span className="eyebrow">Gifting for every occasion</span>
           <h1 className="display hero__title">
-            Gifts That<br />Build Stronger<br /><span className="accent">Businesses</span>
+            Gifts That<br />Make Every Moment<br /><span className="accent">Memorable</span>
           </h1>
           <p className="lede">
-            Premium, fully customisable corporate gift sets for your teams, clients and partners —
-            367 SKUs, branded in-house, delivered across India.
+            Beautiful, customisable gifts for weddings, birthdays, return gifts, festive celebrations,
+            events and the people you want to thank — delivered across India.
           </p>
           <div className="hero__cta">
             <span className="mag">
@@ -110,6 +134,20 @@ export default function Hero() {
             <button className="watch" onClick={() => say("Brand film slot — drop the video in when it is shot")}>
               <span className="rbtn rbtn--play"><Play /></span>Watch Video
             </button>
+          </div>
+
+          <div className="brandx" aria-label="Explore branding methods">
+            <div className="brandx__top">
+              <span><Tag2 /> Your logo, your way</span>
+              <p key={branding}>{BRANDING[branding][1]}</p>
+            </div>
+            <div className="brandx__opts" role="tablist" aria-label="Branding methods">
+              {BRANDING.map(([label], index) => (
+                <button key={label} role="tab" aria-selected={branding === index}
+                  className={branding === index ? "on" : undefined}
+                  onClick={() => setBranding(index)}>{label}</button>
+              ))}
+            </div>
           </div>
 
           <div className="trust">
@@ -122,7 +160,7 @@ export default function Hero() {
               permission — a supplier showing a customer's logo without it is
               a legal problem, not a design decision. */}
           <div className="clients">
-            <span className="clients__t">Trusted by leading businesses</span>
+            <span className="clients__t">Made for celebrations and meaningful moments</span>
             <div className="clients__row">
               {["Client One", "Client Two", "Client Three", "Client Four", "Client Five", "Client Six"]
                 .map((n) => <span className="clients__i" key={n}>{n}</span>)}
@@ -135,7 +173,8 @@ export default function Hero() {
 
         <div className="hero__art" ref={art}
           onMouseEnter={() => { paused.current = true; }}
-          onMouseLeave={() => { paused.current = false; }}>
+          onMouseMove={tiltArt}
+          onMouseLeave={resetArt}>
           <div className="hero__frame">
             {heroSlides.map((h, k) => (
               <img key={h.slug} src={h.img} alt={`${h.name} gift set in ${h.colour}`}
@@ -143,6 +182,14 @@ export default function Hero() {
                 loading={k === 0 ? "eager" : "lazy"} />
             ))}
             <span className="hero__prog"><i ref={bar} /></span>
+            <div className="hero__tag">
+              <span className="mono">{slide.code}</span>
+              <b>{slide.name}</b>
+              <span className="small">{slide.colour} · {slide.line}</span>
+            </div>
+          </div>
+          <div className="hero__seal" aria-label="Four in-house branding methods">
+            <b>4</b><span>branding<br />methods</span>
           </div>
 
           {/* The rail: every colourway at a glance, the way a shopper expects
@@ -162,11 +209,6 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="hero__tag">
-            <span className="mono">{slide.code}</span>
-            <b>{slide.name}</b>
-            <span className="small">{slide.colour} · {slide.line}</span>
-          </div>
         </div>
       </div>
 

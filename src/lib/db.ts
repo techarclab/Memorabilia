@@ -16,8 +16,7 @@
    ------------------------------------------------------------------ */
 import { getDb, isConfigured, NotConfigured } from "./firebase";
 export { NotConfigured };
-import type { BasketLine, Product } from "@/types";
-import { bySlug } from "@/data/catalog";
+import type { BasketLine } from "@/types";
 
 /* ---------- shapes ---------- */
 
@@ -65,14 +64,10 @@ export function makeRef(kind: Kind): string {
 }
 
 export function toLineItems(lines: BasketLine[]): LineItem[] {
-  return lines.flatMap((l) => {
-    const p: Product | undefined = bySlug(l.slug);
-    if (!p) return [];
-    return [{
-      slug: p.slug, code: p.code, name: p.name,
-      qty: l.qty, colour: l.colour, brand: l.brand,
-    }];
-  });
+  return lines.map((l) => ({
+    slug: l.slug, code: l.code, name: l.name,
+    qty: l.qty, colour: l.colour, brand: l.brand,
+  }));
 }
 
 /**

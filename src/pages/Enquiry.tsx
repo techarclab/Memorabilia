@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import QuoteForm from "@/components/QuoteForm";
 import { Doc } from "@/lib/icons";
-import { brandingMethods, bySlug, piecesMeta } from "@/data/catalog";
+import { brandingMethods } from "@/data/catalog";
 import { usePageMotion } from "@/hooks/useMotion";
 import { MOQ, useStore } from "@/store/StoreContext";
 
@@ -40,19 +40,14 @@ export default function Enquiry() {
             ) : (
               <>
                 {lines.map((it) => {
-                  const p = bySlug(it.slug);
-                  if (!p) return null;
                   const b = brandingMethods.find((x) => x.id === it.brand);
                   return (
                     <div className="ci" style={{ gridTemplateColumns: "110px 1fr auto" }}
                       key={`${it.slug}-${it.colour}-${it.brand}`}>
-                      <img src={p.img} alt="" style={{ width: 110, height: 74 }} />
+                      <img src={it.img} alt="" style={{ width: 110, height: 74 }} />
                       <div>
-                        <div className="ci__n" style={{ fontSize: "1.06rem" }}>{p.name}</div>
-                        <div className="ci__m">
-                          {p.code} · {it.colour} · {b?.name}
-                          {p.pieces ? ` · ${piecesMeta[p.pieces]?.label ?? `${p.pieces}-in-1`}` : ""}
-                        </div>
+                        <div className="ci__n" style={{ fontSize: "1.06rem" }}>{it.name}</div>
+                        <div className="ci__m">{it.code} · {it.colour} · {b?.name} · {it.line}</div>
                         {it.qty < MOQ && (
                           <p className="note" style={{ marginTop: 6 }}>
                             Branded orders start at {MOQ} pieces per set.

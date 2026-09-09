@@ -232,17 +232,34 @@ ul{margin:0;padding:0;list-style:none}
 .hero__copy>*:nth-child(4){animation-delay:.28s}
 .hero__copy>*:nth-child(5){animation-delay:.36s}
 .hero__copy>*:nth-child(6){animation-delay:.44s}
-@keyframes rise{to{opacity:1;transform:none}}
+@keyframes rise{to{opacity:1;transform:perspective(1200px) translateY(var(--drift,0)) rotateX(var(--hero-rx,0deg)) rotateY(var(--hero-ry,0deg))}}
 .hero__title{margin:14px 0 18px}
 .hero__cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px}
 .watch{display:inline-flex;align-items:center;gap:10px;font-size:.88rem;font-weight:700}
 .watch:hover .rbtn{background:var(--forest);color:#fff;border-color:transparent}
 
+/* A small choice inside the hero makes custom branding tangible before the
+   visitor ever reaches the enquiry form. */
+.brandx{margin-top:clamp(22px,2.6vw,30px);padding-block:15px 14px;border-block:1px solid rgba(20,26,23,.1)}
+.brandx__top{display:flex;gap:14px;align-items:baseline;justify-content:space-between}
+.brandx__top>span{display:inline-flex;align-items:center;gap:7px;font-size:.8rem;font-weight:800;color:var(--forest);white-space:nowrap}
+.brandx__top svg{width:15px;height:15px;color:var(--gold)}
+.brandx__top p{margin:0;color:var(--t-3);font-size:.75rem;line-height:1.35;text-align:right;animation:brand-note .32s var(--ease)}
+.brandx__opts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.brandx__opts button{position:relative;overflow:hidden;padding:7px 10px;border:1px solid var(--line);border-radius:var(--pill);background:rgba(255,255,255,.64);color:var(--t-2);font-size:.72rem;font-weight:750;transition:background .22s var(--ease),color .22s var(--ease),border-color .22s var(--ease),transform .22s var(--ease)}
+.brandx__opts button:hover{transform:translateY(-1px);border-color:var(--forest);color:var(--forest)}
+.brandx__opts button.on{background:var(--forest);border-color:var(--forest);color:#fff;box-shadow:0 7px 15px -12px rgba(20,26,23,.8)}
+.brandx__opts button.on::after{content:"";position:absolute;inset:0;transform:translateX(-125%);background:linear-gradient(100deg,transparent,rgba(255,255,255,.25),transparent);animation:brand-sweep .62s var(--ease)}
+@keyframes brand-note{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes brand-sweep{to{transform:translateX(125%)}}
+
 /* ---- the shot, and the rail of colourways beside it ---- */
 .hero__art{position:relative;align-self:center;min-width:0;display:grid;
-  grid-template-columns:1fr auto;gap:clamp(10px,1vw,16px);align-items:center;
+  grid-template-columns:minmax(0,1fr);gap:clamp(12px,1.2vw,18px);align-items:start;
+  width:min(100%,570px);justify-self:end;margin-top:clamp(24px,3vw,52px);
   opacity:0;animation:rise 1s var(--ease) .2s forwards;
-  transform:translateY(var(--drift,0))}
+  transform:perspective(1200px) translateY(var(--drift,0)) rotateX(var(--hero-rx,0deg)) rotateY(var(--hero-ry,0deg));
+  transform-style:preserve-3d;transition:transform .28s var(--ease)}
 .hero__frame{position:relative;aspect-ratio:.78;border-radius:var(--r-xl);overflow:hidden;
   background:var(--shell);box-shadow:0 34px 70px -38px rgba(20,26,23,.5)}
 .hero__frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
@@ -254,8 +271,8 @@ ul{margin:0;padding:0;list-style:none}
 .hero__prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(20,26,23,.10);z-index:3}
 .hero__prog i{display:block;height:100%;background:var(--gold);transform:scaleX(0);transform-origin:0 50%}
 
-.hero__rail{display:flex;flex-direction:column;gap:clamp(7px,.8vw,11px);flex:none}
-.hero__th{position:relative;width:clamp(56px,5vw,74px);aspect-ratio:.86;border-radius:14px;
+.hero__rail{display:flex;align-items:center;justify-content:space-between;gap:clamp(10px,1.2vw,18px);min-width:0;width:100%}
+.hero__th{position:relative;width:clamp(58px,4.4vw,68px);aspect-ratio:1.05;border-radius:12px;flex:none;
   overflow:hidden;background:var(--shell);box-shadow:inset 0 0 0 1px var(--line-2);
   transition:transform .3s var(--ease),box-shadow .3s var(--ease-soft),opacity .3s}
 .hero__th img{width:100%;height:100%;object-fit:cover;opacity:.72;transition:opacity .3s,transform .5s var(--ease)}
@@ -265,7 +282,7 @@ ul{margin:0;padding:0;list-style:none}
 .hero__th:hover img{opacity:1;transform:scale(1.06)}
 .hero__th.on{box-shadow:inset 0 0 0 2px var(--forest),0 8px 20px -12px rgba(20,26,23,.5)}
 .hero__th.on img{opacity:1}
-.hero__nav{display:flex;gap:7px;margin-top:4px;justify-content:center}
+.hero__nav{display:flex;gap:7px;margin-left:clamp(4px,.7vw,10px);justify-content:center;flex:none}
 .hero__nav .rbtn{width:clamp(30px,2.6vw,34px);height:clamp(30px,2.6vw,34px)}
 
 .hero__tag{position:absolute;left:clamp(12px,1.4vw,20px);bottom:clamp(12px,1.4vw,20px);z-index:4;
@@ -274,6 +291,10 @@ ul{margin:0;padding:0;list-style:none}
   box-shadow:0 6px 22px -12px rgba(20,26,23,.5)}
 .hero__tag .mono{color:var(--t-3);display:block}
 .hero__tag b{display:block;font-weight:800;font-size:.95rem;margin:1px 0;letter-spacing:-.02em}
+.hero__seal{position:absolute;z-index:5;right:clamp(14px,1.8vw,26px);top:clamp(15px,2vw,26px);display:grid;grid-template-columns:auto auto;align-items:center;gap:7px;padding:9px 11px 9px 10px;border-radius:50%;aspect-ratio:1;background:var(--forest);color:#fff;box-shadow:0 16px 30px -17px rgba(20,26,23,.72);animation:seal-float 4.8s var(--ease-soft) infinite}
+.hero__seal b{font-size:1.45rem;line-height:1;letter-spacing:-.06em}
+.hero__seal span{font-size:.54rem;font-weight:750;line-height:1.08;text-transform:uppercase;letter-spacing:.03em}
+@keyframes seal-float{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-8px) rotate(3deg)}}
 
 /* ---- the raised bar across the foot of the hero ---- */
 .hero__bar{position:relative;z-index:2;display:grid;
@@ -779,6 +800,14 @@ ul{margin:0;padding:0;list-style:none}
   aspect-ratio:.75;cursor:zoom-in}
 .pdp__main img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
 .pdp__main.zoom img{transform:scale(1.8)}
+
+/* A range product's photograph IS the supplier's catalogue page — the
+   dimensions, the colourways and the feature call-outs are printed on it.
+   Cropping it to a fixed frame throws away exactly the part a buyer needs,
+   so this frame takes the page's own shape and shows all of it. */
+.pdp__main--page{aspect-ratio:auto;background:#fff;border:1px solid var(--line-2)}
+.pdp__main--page img{height:auto;object-fit:contain}
+.pdp__main--page.zoom img{transform:scale(1.55);transform-origin:top center}
 .pdp__thumbs{display:flex;gap:8px}
 .pdp__thumbs button{width:70px;aspect-ratio:.75;border-radius:10px;overflow:hidden;background:var(--shell);
   box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .25s}
@@ -935,7 +964,7 @@ ul{margin:0;padding:0;list-style:none}
 .ftr .logo__name{color:#fff}
 .ftr .logo__sub{color:rgba(255,255,255,.5)}
 .ftr .logo__mark{color:#fff}
-.ftr__grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.2fr;gap:clamp(24px,3vw,48px);
+.ftr__grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1.1fr;gap:clamp(20px,2.4vw,40px);
   padding-bottom:clamp(32px,3.6vw,48px)}
 .ftr h5{font-size:.82rem;font-weight:800;color:#fff;margin:0 0 16px}
 .ftr li{margin-bottom:9px}
@@ -989,6 +1018,32 @@ ul{margin:0;padding:0;list-style:none}
 .aboutpic{border-radius:var(--r-xl);overflow:hidden;background:var(--shell);aspect-ratio:.82}
 .aboutpic img{width:100%;height:100%;object-fit:cover}
 .split3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:clamp(12px,1.5vw,20px)}
+
+/* ---------- 34. Our story ---------- */
+.about-hero{position:relative;padding-top:clamp(26px,4vw,58px)}
+.about-hero__in{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(300px,.96fr);gap:clamp(30px,6vw,94px);align-items:center;margin:clamp(24px,4vw,56px) 0 clamp(60px,9vw,130px)}
+.about-hero__copy{display:grid;justify-items:start;gap:20px}.about-hero__copy .display{font-size:clamp(2.7rem,6vw,5.5rem);line-height:.98;max-width:9.5ch}.about-hero__copy .stack{gap:15px}.about-hero__copy .lede{font-size:clamp(.93rem,1.1vw,1.04rem);line-height:1.7;max-width:62ch}.about-hero__copy .btn{margin-top:4px}
+.about-hero__art{position:relative;aspect-ratio:.88;overflow:visible;border-radius:var(--r-xl);background:var(--w-mint);box-shadow:0 32px 70px -42px rgba(20,26,23,.62)}
+.about-hero__art>img{width:100%;height:100%;display:block;object-fit:cover;border-radius:var(--r-xl);transition:transform .7s var(--ease)}
+.about-hero__art:hover>img{transform:scale(1.035)}
+.about-hero__note{position:absolute;z-index:2;top:18px;left:-20px;padding:9px 13px;border-radius:var(--pill);background:var(--gold);color:#fff;font-size:.71rem;font-weight:800;letter-spacing:.04em;box-shadow:0 12px 24px -15px rgba(20,26,23,.65);animation:about-float 4s ease-in-out infinite}
+.about-hero__stamp{position:absolute;z-index:2;display:flex;align-items:center;gap:10px;right:18px;bottom:-28px;padding:13px 15px;border:1px solid rgba(255,255,255,.75);border-radius:var(--r-lg);background:rgba(20,26,23,.93);color:#fff;box-shadow:0 16px 30px -18px rgba(20,26,23,.85)}
+.about-hero__stamp svg{width:26px;height:26px;color:var(--gold-2)}.about-hero__stamp span{font-size:.72rem;line-height:1.35;font-weight:750}
+@keyframes about-float{50%{transform:translateY(-8px)}}
+.about-rules{position:relative;overflow:hidden;background:var(--shell);border-block:1px solid var(--line)}
+.about-rules::after{content:"";position:absolute;width:40vw;aspect-ratio:1;right:-22vw;bottom:-24vw;border-radius:50%;border:1px solid var(--line-2);pointer-events:none}
+.about-rules__head{position:relative;z-index:1;margin-bottom:clamp(28px,4vw,46px)}.about-rules__head p{max-width:55ch;color:var(--t-2);font-size:.95rem;line-height:1.7}
+.about-rules__in{position:relative;z-index:1;display:grid;grid-template-columns:minmax(240px,.85fr) minmax(300px,1.15fr);gap:clamp(18px,4vw,70px);align-items:stretch}
+.about-rules__tabs{display:grid;align-content:start;border-top:1px solid var(--line-2)}
+.about-rules__tabs button{display:grid;grid-template-columns:38px 1fr 18px;align-items:center;gap:8px;min-height:71px;padding:12px 7px 12px 0;border-bottom:1px solid var(--line-2);color:var(--t-2);text-align:left;transition:color .25s var(--ease),padding .25s var(--ease),background .25s var(--ease)}
+.about-rules__tabs button span{font:700 .71rem var(--mono);color:var(--gold)}.about-rules__tabs button b{font-size:.93rem;line-height:1.25}.about-rules__tabs button svg{opacity:0;transform:translateX(-4px);transition:opacity .25s var(--ease),transform .25s var(--ease)}
+.about-rules__tabs button:hover,.about-rules__tabs button.on{padding-left:12px;color:var(--forest);background:rgba(255,255,255,.72)}.about-rules__tabs button.on svg{opacity:1;transform:none}
+.about-rules__detail{position:relative;display:grid;align-content:center;justify-items:start;gap:13px;min-height:350px;padding:clamp(28px,4vw,58px);overflow:hidden;border-radius:var(--r-xl);background:var(--forest);color:#fff;box-shadow:0 28px 58px -40px rgba(20,26,23,.8);animation:about-detail .48s var(--ease)}
+.about-rules__detail .eyebrow{color:rgba(255,255,255,.6)}.about-rules__detail h3{font-size:clamp(1.75rem,3vw,3rem);line-height:1.03;letter-spacing:0;max-width:12ch}.about-rules__detail p{max-width:48ch;color:rgba(255,255,255,.72);font-size:.95rem;line-height:1.7}.about-rules__detail .lnk{color:#fff}.about-rules__icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(255,255,255,.24);border-radius:50%;color:var(--gold-2)}.about-rules__icon svg{width:25px;height:25px}
+@keyframes about-detail{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.about-numbers{background:var(--w-mint)}.about-numbers>.wrap>.eyebrow{display:block;margin-bottom:18px}
+.about-products{background:var(--w-sky)}.about-products__grid .rcard__img{aspect-ratio:1.08}.about-products__grid .rcard__img img{object-position:center}
+.home-products{background:var(--w-sky)}.home-products__grid .rcat__img{aspect-ratio:1.03}
 .ctile{position:relative;overflow:hidden;border-radius:var(--r-xl);background:var(--card);
   min-height:clamp(320px,34vw,400px);display:flex;align-items:flex-end;border:1px solid var(--line-2)}
 .ctile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
@@ -1017,12 +1072,22 @@ ul{margin:0;padding:0;list-style:none}
   .hero__in{grid-template-columns:minmax(0,1fr)}
   .phero__in{grid-template-columns:minmax(0,1fr)}
   .phero__art{aspect-ratio:1.3;order:-1}
-  .hero__art{order:-1}
+  .hero__art{order:-1;justify-self:stretch;width:100%;margin-top:0}
   .hero__frame{aspect-ratio:1.15}
   .hero__bar{grid-template-columns:repeat(2,1fr)}
   .hero__stat:nth-child(2){border-right:0}
   .hero__disc{grid-column:1/-1;justify-content:center;padding-top:6px;border-top:1px solid var(--line-2)}
   .feat__copy{padding-bottom:0}
+}
+@media (max-width:640px){
+  .brandx__top{align-items:flex-start;flex-direction:column;gap:5px}
+  .brandx__top p{text-align:left}
+  .brandx__opts{gap:6px}
+  .brandx__opts button{padding:7px 9px;font-size:.7rem}
+  .hero__seal{right:12px;top:12px;padding:8px 9px}
+  .hero__rail{gap:6px;overflow-x:auto;padding-bottom:2px}
+  .hero__th{width:48px}
+  .hero__nav{position:sticky;right:0;margin-left:2px;padding-left:4px;background:linear-gradient(90deg,transparent,#f8f5f0 22%)}
 }
 /* The nav collapses before it can crowd the logo or the action icons. */
 @media (max-width:1120px){
@@ -1055,4 +1120,231 @@ ul{margin:0;padding:0;list-style:none}
   .rv{opacity:1;transform:none}
   .split .w>i{transform:none}
   .hero__copy>*,.hero__art{opacity:1;transform:none}
+}
+
+
+/* ---------- 37. Event finder ---------- */
+.eventx{position:relative;overflow:hidden;background:var(--w-peach)}
+.eventx__in{display:grid;grid-template-columns:minmax(220px,.72fr) minmax(0,1.28fr);gap:clamp(18px,3vw,44px);align-items:stretch}
+.eventx__tabs{display:grid;align-content:start;gap:5px}
+.eventx__tabs button{display:flex;align-items:center;gap:13px;width:100%;padding:14px 12px;border-bottom:1px solid var(--line-2);color:var(--t-2);font-size:.92rem;font-weight:750;text-align:left;transition:color .25s var(--ease),transform .25s var(--ease),background .25s var(--ease)}
+.eventx__tabs button span{font:700 .68rem var(--mono);color:var(--gold)}
+.eventx__tabs button:hover{color:var(--forest);transform:translateX(4px)}
+.eventx__tabs button.on{padding-left:16px;background:rgba(255,255,255,.64);color:var(--forest);box-shadow:inset 3px 0 var(--gold)}
+.eventx__preview{position:relative;display:grid;grid-template-columns:minmax(0,.9fr) minmax(200px,1.1fr);min-height:340px;overflow:hidden;border-radius:var(--r-xl);background:var(--forest);color:#fff;box-shadow:0 30px 64px -42px rgba(20,26,23,.8);animation:event-in .55s var(--ease)}
+.eventx__copy{position:relative;z-index:2;display:grid;align-content:center;gap:14px;padding:clamp(26px,3.4vw,52px)}
+.eventx__copy .eyebrow{color:rgba(255,255,255,.6)}
+.eventx__copy h3{font-size:clamp(1.8rem,3vw,3rem);letter-spacing:0;line-height:1.03}
+.eventx__copy p{color:rgba(255,255,255,.7);line-height:1.65;font-size:.94rem}
+.eventx__copy .lnk{color:#fff}.eventx__copy .lnk:hover{color:#fff}
+.eventx__img{position:relative;min-height:100%;overflow:hidden;background:var(--shell)}
+.eventx__img::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,26,23,.28),transparent 45%);pointer-events:none}
+.eventx__img img{width:100%;height:100%;min-height:340px;object-fit:cover;animation:event-img 7s linear both}
+.eventx__img span{position:absolute;z-index:2;right:16px;bottom:16px;padding:8px 11px;border-radius:var(--pill);background:rgba(255,255,255,.9);color:var(--forest);font-size:.72rem;font-weight:800}
+@keyframes event-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes event-img{from{transform:scale(1.08)}to{transform:scale(1)}}
+@media (max-width:760px){
+  .about-hero__in{grid-template-columns:1fr;gap:34px;margin-bottom:64px}.about-hero__art{width:calc(100% - 18px);margin-left:18px;aspect-ratio:1}.about-hero__note{left:-12px;top:13px}.about-hero__stamp{right:12px;bottom:-22px}.about-rules__in{grid-template-columns:1fr;gap:24px}.about-rules__detail{min-height:300px}.about-rules__tabs button{min-height:64px}.about-rules__head .h1{max-width:11ch}
+  .eventx__in{grid-template-columns:1fr;gap:20px}
+  .eventx__tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .eventx__tabs button{min-height:56px;padding:10px 8px;font-size:.78rem;line-height:1.25}
+  .eventx__tabs button.on{padding-left:11px}
+  .eventx__preview{grid-template-columns:1fr;min-height:0}
+  .eventx__copy{min-height:260px}
+  .eventx__img{min-height:260px}.eventx__img img{min-height:260px}
+}
+
+/* ---------- 38. Ranges ---------- */
+
+/* The fourteen supplier books. Wider tiles than the gift-set categories
+   because each one has a sentence to say about what is in it. */
+.rcats{display:grid;gap:clamp(12px,1.4vw,20px);
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.rcat{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line-2);
+  border-radius:var(--r-lg);overflow:hidden;
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease-soft),border-color .3s}
+.rcat:hover{transform:translateY(-4px);border-color:transparent;
+  box-shadow:0 18px 40px -22px rgba(20,26,23,.34)}
+.rcat__img{position:relative;display:block;aspect-ratio:1.15;overflow:hidden;background:var(--shell)}
+.rcat__img img{width:100%;height:100%;object-fit:cover;object-position:center top;
+  transition:transform .7s var(--ease)}
+.rcat:hover .rcat__img img{transform:scale(1.05)}
+.rcat__b{display:flex;flex-direction:column;gap:5px;padding:15px 16px 17px;flex:1}
+.rcat__b b{font-size:1rem;font-weight:800;letter-spacing:-.02em}
+.rcat__b>span{font-size:.79rem;color:var(--t-3);font-weight:500;line-height:1.55}
+.rcat__go{display:inline-flex;align-items:center;gap:6px;margin-top:auto;padding-top:10px;
+  font-size:.78rem;font-weight:700;font-style:normal;color:var(--forest)}
+.rcat__go svg{width:13px;height:13px;transition:transform .3s var(--ease)}
+.rcat:hover .rcat__go svg{transform:translateX(4px)}
+
+/* Product cards inside a range. The catalogue page is the photograph, so
+   the tile is taller than a gift-set card and the page is never cropped
+   to a square — the dimensions and colourways printed on it are the
+   point. */
+.rgrid{display:grid;gap:clamp(12px,1.4vw,20px);
+  grid-template-columns:repeat(auto-fill,minmax(215px,1fr))}
+.rcard{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line-2);
+  border-radius:var(--r-lg);overflow:hidden;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease-soft),border-color .3s}
+.rcard:hover{transform:translateY(-3px);border-color:transparent;
+  box-shadow:0 16px 36px -22px rgba(20,26,23,.32)}
+.rcard__img{display:block;aspect-ratio:.78;overflow:hidden;background:#fff}
+.rcard__img img{width:100%;height:100%;object-fit:contain;transition:transform .6s var(--ease)}
+.rcard:hover .rcard__img img{transform:scale(1.035)}
+.rcard__b{display:flex;flex-direction:column;gap:4px;padding:12px 13px 14px;flex:1}
+.rcard__code{color:var(--gold-d,var(--gold));font-weight:600;letter-spacing:.04em}
+.rcard__b b{font-size:.86rem;font-weight:700;line-height:1.35;letter-spacing:-.01em}
+.rcard__spec{font-size:.72rem;color:var(--t-3);font-weight:500;line-height:1.45;margin-top:auto;
+  padding-top:6px}
+
+/* Grid sheets: books that put several SKUs on one page. Shown whole. */
+.sheets{display:grid;gap:clamp(14px,1.8vw,24px);
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.sheet{margin:0;border:1px solid var(--line-2);border-radius:var(--r-lg);overflow:hidden;
+  background:#fff}
+.sheet img{display:block;width:100%;height:auto}
+.sheet figcaption{padding:11px 14px 13px;font-size:.78rem;font-weight:700;color:var(--t-2);
+  border-top:1px solid var(--line-2)}
+
+/* The range sidebar has no drawer toggle, so it stays open on wide screens
+   and simply stacks on narrow ones. */
+@media (min-width:1081px){ .filters--open{display:grid} }
+@media (max-width:1080px){
+  .filters--open{display:grid;position:static;background:#fff;padding:18px;
+    border-radius:var(--r-lg);border:1px solid var(--line-2);margin-bottom:22px}
+}
+
+
+/* ---------- 38. Home motion ---------- */
+
+/* --- The catalogue marquee --- */
+.mq{overflow:hidden;padding:clamp(20px,2.6vw,34px) 0;background:var(--shell);
+  border-block:1px solid var(--line-2);display:grid;gap:clamp(10px,1.2vw,16px)}
+.mq__row{overflow:hidden;
+  /* Fade the ends so the strip reads as continuing past the page rather
+     than being cut off at the viewport. */
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.mq__track{display:flex;gap:clamp(10px,1.2vw,16px);width:max-content;
+  animation:mq 64s linear infinite}
+.mq__row--rev .mq__track{animation-direction:reverse;animation-duration:78s}
+.mq:hover .mq__track,.mq:focus-within .mq__track{animation-play-state:paused}
+@keyframes mq{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+/* Portrait, matching the catalogue photographs, and contained rather than
+   cropped — a landscape tile cut these shots through the middle and showed
+   a band of the backdrop instead of the product. */
+.mq__i{position:relative;flex:none;width:clamp(120px,11vw,152px);aspect-ratio:.78;
+  border-radius:var(--r);overflow:hidden;background:#fff;border:1px solid var(--line-2);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease-soft)}
+.mq__i img{width:100%;height:100%;object-fit:contain}
+.mq__i:hover{transform:translateY(-3px) scale(1.02);
+  box-shadow:0 14px 30px -18px rgba(20,26,23,.42)}
+.mq__c{position:absolute;left:7px;bottom:7px;padding:3px 8px;border-radius:var(--pill);
+  background:rgba(255,255,255,.9);backdrop-filter:blur(5px);font-size:.64rem;
+  color:var(--t-1);opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
+.mq__i:hover .mq__c{opacity:1;transform:none}
+
+/* --- The scroll-told size story --- */
+
+/* The section is four viewports tall and its contents are pinned, so
+   scrolling advances the story instead of moving past it. */
+.story{position:relative;height:340vh;background:var(--w-peach)}
+.story__pin{position:sticky;top:0;height:100vh;display:grid;align-items:center;overflow:hidden}
+.story__in{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,64px);
+  align-items:center;width:100%}
+.story__copy{display:flex;flex-direction:column;gap:clamp(12px,1.4vw,18px);max-width:52ch}
+.story__steps{list-style:none;display:grid;gap:6px;margin:4px 0 0}
+.story__steps li{border-radius:var(--r);opacity:.42;
+  transition:opacity .45s var(--ease),background .45s var(--ease),transform .45s var(--ease)}
+.story__steps button{display:flex;align-items:center;gap:12px;padding:9px 12px;width:100%;
+  text-align:left;border-radius:inherit}
+.story__steps li.done{opacity:.68}
+.story__steps li.on{opacity:1;background:rgba(255,255,255,.72);transform:translateX(4px)}
+.story__no{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:50%;
+  background:var(--forest);color:#fff;font-size:.78rem;font-weight:800;
+  transition:background .45s var(--ease)}
+.story__steps li.on .story__no{background:var(--gold)}
+.story__steps b{display:block;font-size:.92rem;font-weight:800;letter-spacing:-.02em}
+.story__steps em{display:block;font-style:normal;font-size:.76rem;color:var(--t-3);font-weight:600}
+.story__note{min-height:3.2em;color:var(--t-2);font-size:.92rem;line-height:1.7;font-weight:500}
+
+.story__art{position:relative;display:grid;place-items:center}
+.story__glow{position:absolute;inset:6% 4%;border-radius:50%;filter:blur(60px);opacity:.42;
+  background:radial-gradient(circle at 50% 40%,var(--tone,#1b3a6b),transparent 68%);
+  transition:background .8s var(--ease)}
+.story__frame{position:relative;z-index:1;width:min(100%,520px);aspect-ratio:1.34;
+  border-radius:var(--r-xl);overflow:hidden;background:#fff;
+  box-shadow:0 30px 70px -34px rgba(20,26,23,.46)}
+.story__frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transform:scale(1.05);
+  transition:opacity .6s var(--ease),transform .9s var(--ease)}
+.story__frame img.on{opacity:1;transform:none}
+.story__tag{position:absolute;left:14px;bottom:14px;z-index:2;display:flex;flex-direction:column;
+  gap:2px;padding:9px 14px;border-radius:var(--r);background:rgba(255,255,255,.92);
+  backdrop-filter:blur(8px);box-shadow:0 10px 26px -16px rgba(20,26,23,.5)}
+.story__tag b{font-size:.94rem;font-weight:800;letter-spacing:-.02em}
+.story__rail{position:relative;z-index:1;display:flex;gap:6px;margin-top:16px}
+.story__rail i{width:34px;height:3px;border-radius:99px;background:var(--line);
+  transition:background .4s var(--ease)}
+.story__rail i.on{background:var(--gold)}
+
+/* --- The brief builder --- */
+.brief__in{display:grid;grid-template-columns:minmax(0,1fr) clamp(280px,26vw,360px);
+  gap:clamp(22px,3vw,52px);align-items:start}
+.brief__qs{display:grid;gap:clamp(16px,2vw,24px)}
+.brief__q{display:grid;gap:9px}
+.brief__lab{font-size:.82rem;font-weight:800;color:var(--t-2);letter-spacing:-.01em}
+.brief__opts{display:flex;flex-wrap:wrap;gap:8px}
+/* Named .bpick, not .bopt — the quote form already owns .bopt for its
+   full-width radio rows, and reusing it here made every pill a block. */
+.bpick{padding:10px 18px;border-radius:var(--pill);border:1.5px solid var(--line);
+  background:#fff;font-size:.86rem;font-weight:700;color:var(--t-2);cursor:pointer;
+  white-space:nowrap;transition:border-color .22s,color .22s,background .22s,transform .22s var(--ease)}
+.bpick:hover{border-color:var(--forest);color:var(--t-1);transform:translateY(-1px)}
+.bpick.on{background:var(--forest);border-color:var(--forest);color:#fff}
+
+.brief__out{border:1px solid var(--line);border-radius:var(--r-lg);background:#fff;
+  padding:clamp(20px,2.4vw,28px);position:sticky;top:calc(var(--nav-h) + 20px);
+  display:grid;gap:9px;text-align:center}
+.brief__n{display:block;font-size:clamp(3rem,6vw,4.4rem);font-weight:800;letter-spacing:-.05em;
+  line-height:1;color:var(--forest);font-variant-numeric:tabular-nums;
+  animation:pop .42s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+.brief__out>b{font-size:.94rem;font-weight:800;letter-spacing:-.02em}
+.brief__shots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:6px 0 2px}
+.brief__shots a{display:block;aspect-ratio:.82;border-radius:10px;overflow:hidden;
+  background:#fff;border:1px solid var(--line-2)}
+.brief__shots img{width:100%;height:100%;object-fit:contain;transition:transform .5s var(--ease)}
+.brief__shots a:hover img{transform:scale(1.07)}
+.brief__moq{font-size:.76rem;color:var(--t-3);line-height:1.55;font-weight:500;margin-bottom:4px}
+
+/* --- A slow sheen across the primary call to action --- */
+.btn--solid{position:relative;overflow:hidden}
+.btn--solid::after{content:"";position:absolute;top:0;bottom:0;width:42%;left:-60%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.26),transparent);
+  transform:skewX(-18deg);pointer-events:none}
+.btn--solid:hover::after{animation:sheen .85s var(--ease)}
+@keyframes sheen{to{left:130%}}
+
+/* --- A few degrees of tilt on the category tiles --- */
+.tilt3{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease-soft)}
+
+@media (max-width:1080px){
+  .story{height:auto}
+  .story__pin{position:static;height:auto;padding-block:clamp(48px,7vw,86px)}
+  .story__in{grid-template-columns:1fr}
+  .story__art{order:-1}
+  .brief__in{grid-template-columns:1fr}
+  .brief__out{position:static}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .mq__track{animation:none}
+  .story{height:auto}
+  .story__pin{position:static;height:auto;padding-block:clamp(48px,7vw,86px)}
+  .story__frame img{transition:none}
+  .brief__n{animation:none}
+  .btn--solid:hover::after{animation:none}
+  .tilt3{transform:none}
 }
